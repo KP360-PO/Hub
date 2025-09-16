@@ -222,3 +222,78 @@ body.dark .link-card .lc-ico{background:linear-gradient(180deg,#0b1220,#0f172a)}
   transition: color .15s ease;
 }
 .res-open-btn:hover { color: var(--ink, #000); }
+/* === Search Results — color/contrast fixes (light & dark) === */
+.results{
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 28px rgba(0,0,0,.15);
+}
+
+.res-header{
+  background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.04));
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.res-item{
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+
+.res-title-btn .res-title-text{
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.res-sub{
+  color: var(--ink-2);
+}
+
+.res-url{
+  color: var(--ink-2);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+/* icon tile background */
+.res-ico{
+  background: linear-gradient(180deg, #f8fafc, #eef2f7);
+  border-radius: .4rem;
+}
+
+/* Open button */
+.res-open-btn{
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+.res-open-btn:hover{
+  filter: brightness(.98);
+}
+
+/* Hover state with good contrast */
+body:not(.dark) .res-item:hover{
+  background: rgba(0,0,0,.035);
+}
+body.dark .res-item:hover{
+  background: rgba(255,255,255,.06);
+}
+
+/* Dark mode tweaks */
+body.dark .res-header{
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.06));
+}
+body.dark .res-ico{
+  background: linear-gradient(180deg, #0b1220, #0f172a);
+}
+body.dark .res-title-btn .res-title-text{
+  color: var(--ink); /* uses light ink in dark theme vars */
+}
+body.dark .res-sub,
+body.dark .res-url{
+  color: var(--ink-2);
+}
+
+/* Ensure the results list is always above the hero gradient and iframes */
+.results{ z-index: 120; }
