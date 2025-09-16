@@ -129,3 +129,28 @@ body.dark .link-card .lc-ico{background:linear-gradient(180deg,#0b1220,#0f172a)}
 .tp-card img{ transition: filter .25s ease, opacity .2s }
 .tp-card img.img-loading{ filter: blur(8px); opacity:.7 }
 
+/* Search results header + items + open button */
+.res-header{
+  padding:.3rem .4rem;
+  color:var(--ink-2);
+  font-size:.85rem;
+  border-bottom:1px solid var(--border);
+}
+.res-item{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:.5rem; padding:.35rem .4rem; border-bottom:1px solid var(--border);
+}
+.res-title-btn{
+  display:flex; gap:.5rem; align-items:flex-start; flex:1;
+  background:none; border:0; padding:0; text-align:left; cursor:pointer; color:var(--ink);
+}
+.res-title-btn:hover .res-title-text{ text-decoration:underline; }
+.res-ico{ width:22px; display:grid; place-items:center; }
+.res-sub{ font-size:.82rem; color:var(--ink-2); }
+.res-url{ color:var(--ink-2); word-break:break-all; }
+.res-open-btn{
+  border:1px solid var(--border); background:var(--card);
+  padding:.25rem .35rem; border-radius:.45rem; cursor:pointer; line-height:0;
+}
+.res-open-btn:hover{ filter:brightness(.98); }
+
