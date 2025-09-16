@@ -53,19 +53,6 @@ body.dark .hero{background:linear-gradient(180deg,#1e40af 0%, #1e293b 100%)}
 body.dark .search{background:#0b1220; box-shadow:0 0 0 1px var(--border)}
 body.dark .search input{background:transparent; color:var(--ink)}
 
-/* Search results dropdown */
-.results{position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:.6rem; box-shadow:0 12px 28px rgba(0,0,0,.15); margin-top:.35rem; z-index:40; max-height:360px; overflow:auto; display:none}
-.results.visible{display:block}
-.res-item{display:flex; gap:.6rem; align-items:flex-start; padding:.6rem .7rem; border-bottom:1px solid var(--border); cursor:pointer}
-.res-item:last-child{border-bottom:0}
-.res-item:hover{background:rgba(0,0,0,.035)}
-body.dark .res-item:hover{background:rgba(255,255,255,.06)}
-.res-ico{width:28px; height:28px; border-radius:.4rem; display:grid; place-items:center; background:linear-gradient(180deg,#f8fafc,#eef2f7)}
-body.dark .res-ico{background:linear-gradient(180deg,#0b1220,#0f172a)}
-.res-main{flex:1}
-.res-title{font-weight:700; font-size:.95rem}
-.res-sub{font-size:.8rem; color:var(--ink-2)}
-
 /* Categories */
 .categories{display:grid; grid-template-columns:repeat(auto-fill, minmax(clamp(160px,22vw,260px),1fr)); gap:clamp(.6rem,1.5vw,1.2rem); margin:1.4rem 0 1.6rem}
 .category{background:var(--card); border:1px solid var(--border); border-radius:1rem; padding:clamp(.75rem,1.4vw,1.1rem); text-align:center; box-shadow:0 1px 10px rgba(0,0,0,.05); transition: transform .15s ease, box-shadow .15s ease, background .25s, border-color .25s;}
