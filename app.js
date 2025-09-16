@@ -423,34 +423,6 @@ function ensureLinkGrid(containerId, items){
   el.dataset.rendered = '1';
 }
 
-/* ===== Loaders wired to your pages ===== */
-async function loadPoSpreadsheets(){
-  const wrap = document.getElementById('grid-po-spreadsheets');
-  if (!wrap) return;
-  wrap.innerHTML = ''; wrap.removeAttribute('data-rendered');
-  try{
-    const { headers, rows } = await fetchSheet('PO Spreadsheets');
-    // Map to [{name, note, url}]
-    const items = mapRowsToLinks(headers, rows);
-    // Fill global array so search picks them up
-    PO_SPREADSHEETS.splice(0, PO_SPREADSHEETS.length, ...items);
-    buildLinkGrid(wrap, PO_SPREADSHEETS);
-  }catch(err){
-    const e = document.createElement('div');
-    e.className = 'error';
-    e.textContent = `Failed to load “PO Spreadsheets”: ${err.message}`;
-    wrap.appendChild(e);
-  }
-}
-
-/* Hook into your router: replace your existing setActive() branch for po-spreadsheets */
-const _oldSetActive = setActive;
-setActive = function(view){
-  _oldSetActive(view);
-  if (view === 'po-spreadsheets') loadPoSpreadsheets();
-  // keep your other branches as-is (po-tools, marketplaces, etc.)
-};
-
 /* ========= SEARCH — list below the bar + explicit Open button ========= */
 
 // Catalog
@@ -699,6 +671,12 @@ async function loadLinksGridFromTab(containerId, tabName){
   try{
     const { headers, rows } = await fetchSheetRows(tabName);
     const items = rowsToLinkItems(headers, rows);
+
+    // If this is the PO Spreadsheets tab, update the global array for search
+    if (/^po spreadsheets$/i.test(tabName)) {
+      PO_SPREADSHEETS.splice(0, PO_SPREADSHEETS.length, ...items);
+    }
+
     buildLinkGrid(container, items);
   }catch(err){
     console.error('Links grid load error:', err);
