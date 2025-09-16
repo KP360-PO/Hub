@@ -1,3 +1,4 @@
+<script>
 /* ========= Router & Theme ========= */
 const pages = Array.from(document.querySelectorAll('.page'));
 const footer = document.getElementById('footer');
@@ -29,12 +30,15 @@ function setActive(view){
 
   if (v === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
   if (v === 'top-performers') setTimeout(() => loadTopPerformers(false), 0);
-// NEW (loads from your Apps Script tab named exactly “PO Spreadsheets”):
-if (v === 'po-spreadsheets') loadLinksGridFromTab('grid-po-spreadsheets', 'PO Spreadsheets');
-  if (v === 'po-tools') loadLinksGridFromTab('grid-po-tools', 'PO Tools');
-  if (v === 'marketplaces') loadLinksGridFromTab('grid-marketplaces', 'Marketplaces');
-  if (v === 'mailboxes') loadLinksGridFromTab('grid-mailboxes', 'Mailboxes' );
-  if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites' );
+
+  // Link sections (all from Apps Script tabs)
+  if (v === 'po-spreadsheets')   loadLinksGridFromTab('grid-po-spreadsheets',   'PO Spreadsheets');
+  if (v === 'po-tools')          loadLinksGridFromTab('grid-po-tools',          'PO Tools');
+  if (v === 'marketplaces')      loadLinksGridFromTab('grid-marketplaces',      'Marketplaces');
+  if (v === 'mailboxes')         loadLinksGridFromTab('grid-mailboxes',         'Mailboxes');
+  if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites');
+
+  // SOPs still manual array
   if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS);
 }
 
@@ -338,18 +342,25 @@ async function loadTopPerformers(showModal=false){
 }
 
 /* ========= Link Grids (auto from Apps Script) ========= */
-/* Uses your existing SUPPLIER_API. Expected columns (case-insensitive):
-   Title | Description | Link
-*/
+/* Expected columns (case-insensitive): Title | Description | Link */
 
-const PO_SPREADSHEETS = [];   // filled from API
-const PO_TOOLS = [];
-const MARKETPLACES = [];
-const MAILBOXES = [];
+const PO_SPREADSHEETS   = [];
+const PO_TOOLS          = [];
+const MARKETPLACES      = [];
+const MAILBOXES         = [];
 const SUPPLIER_WEBSITES = [];
-const SOP_LINKS = [];
+const SOP_LINKS         = []; // still manual unless you add an Apps Script tab
 
-/* Small helper (same shape as your contacts normalizer) */
+// Apps Script tab name -> in-memory array used by search/catalog
+const TAB_REGISTRY = {
+  'PO Spreadsheets'  : PO_SPREADSHEETS,
+  'PO Tools'         : PO_TOOLS,
+  'Marketplaces'     : MARKETPLACES,
+  'Mailboxes'        : MAILBOXES,
+  'Supplier Websites': SUPPLIER_WEBSITES,
+  // 'SOPs': SOP_LINKS, // uncomment if you move SOPs into a sheet
+};
+
 function mapRowsToLinks(headers, rows){
   const idx = {};
   headers.forEach((h,i)=> idx[String(h||'').trim().toLowerCase()] = i);
@@ -378,7 +389,6 @@ async function fetchSheet(sheetName){
   return { headers, rows };
 }
 
-/* Builds a grid of link cards */
 function buildLinkGrid(container, items){
   container.innerHTML = '';
   if (!items || !items.length){
@@ -412,7 +422,6 @@ function linkCard({name, url, note}){
   return a;
 }
 
-/* Ensure grid is rendered once per page view */
 function ensureLinkGrid(containerId, items){
   const el = document.getElementById(containerId);
   if (!el || el.dataset.rendered) return;
@@ -420,9 +429,27 @@ function ensureLinkGrid(containerId, items){
   el.dataset.rendered = '1';
 }
 
-/* ========= SEARCH — list below the bar + explicit Open button ========= */
+// Load a “links grid” section from a tab and render it + update in-memory array
+async function loadLinksGridFromTab(containerId, tabName){
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '<div class="res-sub" style="padding:.5rem">Loading…</div>';
 
-// Catalog
+  try{
+    const { headers, rows } = await fetchSheetRows(tabName);
+    const items = rowsToLinkItems(headers, rows);
+
+    const bucket = TAB_REGISTRY[tabName];
+    if (bucket) bucket.splice(0, bucket.length, ...items); // keep search index in sync
+
+    buildLinkGrid(container, items);
+  }catch(err){
+    console.error('Links grid load error:', err);
+    container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
+  }
+}
+
+/* ========= SEARCH ========= */
 const CATALOG = [
   { page:'po-projects',   title:'PO Projects',   keywords:['projects','po','portal','docs','kpp'], items: ()=>[] },
   { page:'supplier-contacts', title:'Supplier Contacts', keywords:['contacts','vendors','phone','email','supplier'], items: ()=>[] },
@@ -432,15 +459,17 @@ const CATALOG = [
   { page:'tracker',        title:'Tracker',      keywords:['status','metrics','tracking'], items: ()=>[] },
   { page:'marketplace-performance', title:'Marketplace Performance', keywords:['kpi','revenue','conversion','marketplace','performance'], items: ()=>[] },
   { page:'top-performers', title:'Top Performers', keywords:['awards','recognition','employees'], items: ()=>[] },
-  { page:'po-spreadsheets',title:'PO Spreadsheets', keywords:['sheets','spreadsheets','gdrive','excel'], items: ()=> PO_SPREADSHEETS },
-  { page:'po-tools',       title:'PO Tools',     keywords:['tools','utility','automation','dashboard'], items: ()=> PO_TOOLS },
-  { page:'marketplaces',   title:'Marketplaces', keywords:['amazon','ebay','walmart','marketplace','seller'], items: ()=> MARKETPLACES },
-  { page:'mailboxes',      title:'Mailboxes',    keywords:['inbox','gmail','outlook','email','support'], items: ()=> MAILBOXES },
+
+  // All these now draw from Apps Script
+  { page:'po-spreadsheets',   title:'PO Spreadsheets',   keywords:['sheets','spreadsheets','gdrive','excel'], items: ()=> PO_SPREADSHEETS },
+  { page:'po-tools',          title:'PO Tools',          keywords:['tools','utility','automation','dashboard'], items: ()=> PO_TOOLS },
+  { page:'marketplaces',      title:'Marketplaces',      keywords:['amazon','ebay','walmart','marketplace','seller'], items: ()=> MARKETPLACES },
+  { page:'mailboxes',         title:'Mailboxes',         keywords:['inbox','gmail','outlook','email','support'], items: ()=> MAILBOXES },
   { page:'supplier-websites', title:'Supplier Websites', keywords:['supplier','portal','ordering','tickets'], items: ()=> SUPPLIER_WEBSITES },
-  { page:'sops',           title:'SOPs',         keywords:['standard operating procedures','guidelines','policy','process','how-to'], items: ()=> SOP_LINKS },
+
+  { page:'sops',              title:'SOPs',              keywords:['standard operating procedures','guidelines','policy','process','how-to'], items: ()=> SOP_LINKS },
 ];
 
-// Fallback: harvest home icons
 function harvestFromHomeIcons(){
   const entries = [];
   document.querySelectorAll('.categories .category').forEach(cat=>{
@@ -459,7 +488,6 @@ function harvestFromHomeIcons(){
   return entries;
 }
 
-// Build a fresh index (no caching)
 function buildIndex(){
   const entries = [];
   CATALOG.forEach(cat => {
@@ -488,16 +516,12 @@ function buildIndex(){
       });
     }catch(_e){}
   });
-
-  // Only harvest if we have no categories (avoid dups)
   if (!entries.some(e => e.kind === 'category')) {
     entries.push(...harvestFromHomeIcons());
   }
-
   return entries;
 }
 
-// DOM hooks
 const searchInput  = document.getElementById('globalSearch');
 const searchBtn    = document.getElementById('searchBtn');
 const resultsEl    = document.getElementById('searchResults');
@@ -510,23 +534,18 @@ function domReadyForSearch(){
   return true;
 }
 
-// Search + render (no auto-open)
 function doSearch(){
   if (!domReadyForSearch()) return;
-
   const q = (searchInput.value||'').trim().toLowerCase();
   if (!q) { resultsEl.classList.remove('visible'); resultsEl.innerHTML=''; return; }
-
   const idx = buildIndex();
   const res = idx.filter(e => e.haystack.includes(q));
-
   res.sort((a,b)=>{
     if (a.kind!==b.kind) return a.kind==='item' ? -1 : 1;
     const ad = a.title.toLowerCase().indexOf(q);
     const bd = b.title.toLowerCase().indexOf(q);
     return (ad<0?999:ad) - (bd<0?999:bd);
   });
-
   renderResults(res.slice(0, 30), q);
 }
 
@@ -545,7 +564,6 @@ function renderResults(list, q){
     row.setAttribute('role','option');
     row.dataset.index = String(i);
 
-    // Left: refine query (no nav)
     const left = document.createElement('button');
     left.type = 'button';
     left.className = 'res-title-btn';
@@ -567,7 +585,6 @@ function renderResults(list, q){
       doSearch();
     });
 
-    // Right: explicit Open (navigates)
     const open = document.createElement('button');
     open.type = 'button';
     open.className = 'res-open-btn';
@@ -618,15 +635,21 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTopPerformers(false);
   }
 
-  // Set the active page (single source of truth)
+  // Set the active page
   setActive(initial);
-// Prefetch PO Spreadsheets so global search sees those links immediately
-fetchSheetRows('PO Spreadsheets')
-  .then(({ headers, rows }) => {
-    const items = rowsToLinkItems(headers, rows);
-    PO_SPREADSHEETS.splice(0, PO_SPREADSHEETS.length, ...items);
-  })
-  .catch(_ => {/* silent */});
+
+  // Prefetch all link tabs so global search has items right away
+  const TABS_TO_PREFETCH = Object.keys(TAB_REGISTRY); // ['PO Spreadsheets','PO Tools','Marketplaces','Mailboxes','Supplier Websites']
+  Promise.all(
+    TABS_TO_PREFETCH.map(tab =>
+      fetchSheetRows(tab)
+        .then(({ headers, rows }) => {
+          const items = rowsToLinkItems(headers, rows);
+          TAB_REGISTRY[tab].splice(0, TAB_REGISTRY[tab].length, ...items);
+        })
+        .catch(()=>{/* silent */})
+    )
+  );
 
   // If user deep-linked to contacts, kick off the fetch
   if (initial === 'supplier-contacts') {
@@ -650,11 +673,9 @@ async function fetchSheetRows(tabName){
 function rowsToLinkItems(headers, rows){
   const idx = {};
   headers.forEach((h,i)=>{ idx[(h||'').toString().trim().toLowerCase()] = i; });
-
   const iName = idx['name'] ?? idx['title'] ?? 0;
   const iUrl  = idx['url']  ?? idx['link']  ?? 1;
   const iNote = idx['note'] ?? idx['desc']  ?? idx['description'] ?? -1;
-
   return rows.map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
              .map(r => ({
                name: (r[iName]??'').toString().trim(),
@@ -664,26 +685,20 @@ function rowsToLinkItems(headers, rows){
              .filter(it => it.name && it.url);
 }
 
-// Load a “links grid” section from a tab and render it
+// Load a “links grid” section from a tab and render it (wrapper used earlier)
 async function loadLinksGridFromTab(containerId, tabName){
   const container = document.getElementById(containerId);
   if (!container) return;
-
-  // lightweight loading state
   container.innerHTML = '<div class="res-sub" style="padding:.5rem">Loading…</div>';
-
   try{
     const { headers, rows } = await fetchSheetRows(tabName);
     const items = rowsToLinkItems(headers, rows);
-
-    // If this is the PO Spreadsheets tab, update the global array for search
-    if (/^po spreadsheets$/i.test(tabName)) {
-      PO_SPREADSHEETS.splice(0, PO_SPREADSHEETS.length, ...items);
-    }
-
+    const bucket = TAB_REGISTRY[tabName];
+    if (bucket) bucket.splice(0, bucket.length, ...items);
     buildLinkGrid(container, items);
   }catch(err){
     console.error('Links grid load error:', err);
     container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
   }
 }
+</script>
