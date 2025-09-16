@@ -5,12 +5,13 @@ const themeToggle = document.getElementById('themeToggle');
 
 const sunSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>`;
 const moonSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+
 function setThemeIcon(mode){ themeToggle.innerHTML = (mode === 'dark') ? sunSVG : moonSVG; }
 function applyTheme(mode){
   if(mode==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark');
   localStorage.setItem('theme',mode); setThemeIcon(mode);
 }
-themeToggle.addEventListener('click', ()=> applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
+themeToggle?.addEventListener('click', ()=> applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
 const saved = localStorage.getItem('theme');
 applyTheme(saved ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
@@ -35,6 +36,7 @@ function setActive(view){
   if (v === 'supplier-websites') ensureLinkGrid('grid-supplier-websites', SUPPLIER_WEBSITES);
   if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS);
 }
+
 document.addEventListener('click', (e)=>{
   const link = e.target.closest('[data-view]');
   if(link){ e.preventDefault(); setActive(link.getAttribute('data-view')); }
@@ -43,8 +45,7 @@ window.addEventListener('popstate', e=>{
   const v = (e.state && e.state.view) || (location.hash || '#home').replace('#','');
   setActive(v);
 });
-document.querySelector('.brand').addEventListener('click', ()=> setActive('home'));
-setActive((location.hash || '#home').replace('#',''));
+document.querySelector('.brand')?.addEventListener('click', ()=> setActive('home'));
 
 /* ========= Apps Script Endpoint ========= */
 const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbw1y2WxgBD7HI5crf4ZXvFKrh0lKOHgTs1EjOc4ZWAkRX8OO84aqZGeRDDpr7aN1Zdp8g/exec";
@@ -396,9 +397,9 @@ function linkCard({name, url, note}){
   return a;
 }
 
-/* ========= SEARCH (icons + inside icons) — LIST ONLY + OPEN BUTTON (robust) ========= */
+/* ========= SEARCH — list below the bar + explicit Open button ========= */
 
-// 1) Catalog
+// Catalog
 const CATALOG = [
   { page:'po-projects',   title:'PO Projects',   keywords:['projects','po','portal','docs','kpp'], items: ()=>[] },
   { page:'supplier-contacts', title:'Supplier Contacts', keywords:['contacts','vendors','phone','email','supplier'], items: ()=>[] },
@@ -416,7 +417,7 @@ const CATALOG = [
   { page:'sops',           title:'SOPs',         keywords:['standard operating procedures','guidelines','policy','process','how-to'], items: ()=> SOP_LINKS },
 ];
 
-// 2) Fallback: harvest home icons so results still work even if arrays are empty
+// Fallback: harvest home icons
 function harvestFromHomeIcons(){
   const entries = [];
   document.querySelectorAll('.categories .category').forEach(cat=>{
@@ -435,7 +436,7 @@ function harvestFromHomeIcons(){
   return entries;
 }
 
-// 3) Build a fresh index (no caching) so updates appear immediately
+// Build a fresh index (no caching)
 function buildIndex(){
   const entries = [];
   CATALOG.forEach(cat => {
@@ -465,7 +466,7 @@ function buildIndex(){
     }catch(_e){}
   });
 
-  // ✅ FIX: Harvest only if we have NO categories (prevents duplicates)
+  // Only harvest if we have no categories (avoid dups)
   if (!entries.some(e => e.kind === 'category')) {
     entries.push(...harvestFromHomeIcons());
   }
@@ -473,7 +474,7 @@ function buildIndex(){
   return entries;
 }
 
-// 4) DOM hooks + guard
+// DOM hooks
 const searchInput  = document.getElementById('globalSearch');
 const searchBtn    = document.getElementById('searchBtn');
 const resultsEl    = document.getElementById('searchResults');
@@ -486,7 +487,7 @@ function domReadyForSearch(){
   return true;
 }
 
-// 5) Search + render (no auto-open)
+// Search + render (no auto-open)
 function doSearch(){
   if (!domReadyForSearch()) return;
 
@@ -496,7 +497,6 @@ function doSearch(){
   const idx = buildIndex();
   const res = idx.filter(e => e.haystack.includes(q));
 
-  // Sort: items first, then by earliest match in title
   res.sort((a,b)=>{
     if (a.kind!==b.kind) return a.kind==='item' ? -1 : 1;
     const ad = a.title.toLowerCase().indexOf(q);
@@ -568,7 +568,7 @@ function renderResults(list, q){
   resultsEl.classList.add('visible');
 }
 
-// 6) Events (no auto-open on Enter)
+// Events
 let _searchDebounce=null;
 if (searchInput) {
   searchInput.addEventListener('input', ()=>{
@@ -585,10 +585,9 @@ document.addEventListener('click', (e)=>{ if (!e.target.closest('.search')) resu
 
 /* ===== Initial triggers ===== */
 document.addEventListener('DOMContentLoaded', () => {
-  // choose initial view from hash
   const initial = (location.hash || '#home').replace('#','') || 'home';
 
-  // open the Top Performers modal (once) on home
+  // Show the Top Performers modal once on home
   if (initial === 'home') {
     openTPModalSkeleton();
     loadTopPerformers(true);
@@ -596,15 +595,13 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTopPerformers(false);
   }
 
-  // set the active page
+  // Set the active page (single source of truth)
   setActive(initial);
 
-  // if user deep-linked to contacts, kick off the fetch
+  // If user deep-linked to contacts, kick off the fetch
   if (initial === 'supplier-contacts') {
     setTimeout(loadSupplierContacts, 0);
   }
 
-  // sanity log so you can verify initialization happened
   console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
 });
-
