@@ -623,6 +623,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set the active page (single source of truth)
   setActive(initial);
+// Prefetch PO Spreadsheets so global search sees those links immediately
+fetchSheetRows('PO Spreadsheets')
+  .then(({ headers, rows }) => {
+    const items = rowsToLinkItems(headers, rows);
+    PO_SPREADSHEETS.splice(0, PO_SPREADSHEETS.length, ...items);
+  })
+  .catch(_ => {/* silent */});
 
   // If user deep-linked to contacts, kick off the fetch
   if (initial === 'supplier-contacts') {
