@@ -345,3 +345,54 @@ body.dark .res-ico{ background: linear-gradient(180deg,#0b1220,#0f172a) }
     background: color-mix(in srgb, var(--res-row) 80%, #fff 20%);
   }
 }
+/* === Search results: neutral rows (no blue card) === */
+
+/* Palette tweaks */
+:root{
+  --res-row: #ffffff;           /* light mode row */
+  --res-title: #111827;
+  --res-sub: #475569;
+  --res-url: #374151;
+}
+body.dark{
+  --res-row: #141c2b;           /* dark mode row (match dropdown) */
+  --res-title: #ffffff;
+  --res-sub: #cbd5e1;
+  --res-url: #bac7d6;
+}
+
+/* Row always looks like the container (no highlight fill) */
+.results { background: var(--res-bg, var(--card)); }
+.res-item,
+.res-item:hover,
+.res-item:focus,
+.res-item:focus-within {
+  background: var(--res-row) !important;
+}
+
+/* No unexpected blue from buttons on focus/active */
+.res-title-btn,
+.res-open-btn {
+  background: transparent !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.res-title-btn:hover { background: transparent !important; }
+
+/* Text colors */
+.res-title-text { color: var(--res-title) !important; }
+.res-sub       { color: var(--res-sub)   !important; }
+.res-url       { color: var(--res-url)   !important; }
+
+/* Keep only the thin focus outline for accessibility */
+.res-title-btn:focus-visible,
+.res-open-btn:focus-visible{
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: .35rem;
+}
+
+/* Optional: very subtle hover only in light mode */
+body:not(.dark) .res-item:hover { filter: brightness(0.98); }
+/* Optional: very subtle hover in dark mode */
+body.dark .res-item:hover { background: #1b2436 !important; }
