@@ -188,12 +188,8 @@ async function loadSupplierContacts(){
 }
 
 /* ========= Top Performers — FASTER IMAGES ========= */
-/* Use a CDN front for GitHub files (faster edge caching than raw.githubusercontent).
-   Keep your original bases as fallbacks. Update the commit/branch in the path if needed. */
 const PHOTO_BASES = [
-  // jsDelivr (cached CDN for GitHub)
   "https://cdn.jsdelivr.net/gh/KP360-PO/KPP@a0d4bb8d6909b10d25c517c65568568e4d37580b/path/to/photos/",
-  // Fallbacks
   "https://raw.githubusercontent.com/KP360-PO/KPP/a0d4bb8d6909b10d25c517c65568568e4d37580b/path/to/photos/",
   "https://raw.githubusercontent.com/purchase-order-team/Processors/main/path/to/photos/"
 ];
@@ -201,7 +197,6 @@ function buildPhotoUrl(filename, baseIdx=0){
   const clean = encodeURIComponent(String(filename||'').trim());
   return PHOTO_BASES[baseIdx] + clean;
 }
-/* Tiny inline placeholder so images don’t “pop in” */
 function tinyPlaceholder(text=''){
   const t = (text||'').slice(0,2).toUpperCase();
   const svg =
@@ -217,7 +212,6 @@ function tinyPlaceholder(text=''){
      </svg>`;
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
-/* One IntersectionObserver for all lazy images */
 let _io;
 function ensureImageObserver(){
   if (_io) return _io;
@@ -226,8 +220,6 @@ function ensureImageObserver(){
       if (!entry.isIntersecting) return;
       const img = entry.target;
       _io.unobserve(img);
-
-      // Attempt via primary CDN; on error, fall back to next base
       let baseIdx = Number(img.dataset.baseIdx||"0");
       function setSrc(idx){
         img.dataset.baseIdx = String(idx);
@@ -239,42 +231,32 @@ function ensureImageObserver(){
         if (next < PHOTO_BASES.length){ baseIdx = next; setSrc(next); }
         else { img.onerror = null; img.src = tinyPlaceholder(''); img.classList.remove('img-loading'); }
       };
-
-      // kick off actual load
       setSrc(baseIdx);
     });
   }, { rootMargin: "200px 0px", threshold: 0.01 });
   return _io;
 }
-/* Render a card with lazy/priority loading and blur-up */
 function renderTPCard(p, idx=0){
   const div = document.createElement('div');
   div.className = 'tp-card';
-
   const img = document.createElement('img');
   img.alt = p.name || 'Photo';
-  img.width = 110;           // reserve layout space to avoid CLS
+  img.width = 110;
   img.height = 110;
-  img.loading = 'lazy';      // hint to browser
+  img.loading = 'lazy';
   img.decoding = 'async';
   img.className = 'img-loading';
-  img.src = tinyPlaceholder(p.name);   // instant low-fi placeholder
+  img.src = tinyPlaceholder(p.name);
   img.dataset.file = p.photoFile || '';
   img.dataset.baseIdx = "0";
-  // First 4 images: boost above-the-fold perceived speed
   if (idx < 4) img.fetchPriority = 'high';
-
   const name = document.createElement('div');
   name.className = 'name';
   name.textContent = p.name;
-
   div.append(img, name);
-
-  // Observe for lazy load
   ensureImageObserver().observe(img);
   return div;
 }
-/* Update buildTPGrid to pass index so first few can get high priority */
 function buildTPGrid(list, note=''){
   const grid = document.getElementById('tp-page-grid'); if(!grid) return;
   grid.innerHTML = "";
@@ -353,8 +335,7 @@ async function loadTopPerformers(showModal=false){
   }
 }
 
-/* ========= Link Grids =========
-   Edit these arrays only — search picks them up automatically */
+/* ========= Link Grids ========= */
 const PO_SPREADSHEETS = [
   // { name: 'Example Sheet', url: 'https://docs.google.com/spreadsheets/...', note: 'Tracker' },
 ];
@@ -417,7 +398,7 @@ function linkCard({name, url, note}){
 
 /* ========= SEARCH (icons + inside icons) — LIST ONLY + OPEN BUTTON (robust) ========= */
 
-// 1) Catalog (unchanged)
+// 1) Catalog
 const CATALOG = [
   { page:'po-projects',   title:'PO Projects',   keywords:['projects','po','portal','docs','kpp'], items: ()=>[] },
   { page:'supplier-contacts', title:'Supplier Contacts', keywords:['contacts','vendors','phone','email','supplier'], items: ()=>[] },
@@ -484,10 +465,11 @@ function buildIndex(){
     }catch(_e){}
   });
 
-  // If there are no items at all, add DOM-harvested categories so basic searches still work
-  if (!entries.some(e => e.kind === 'item')) {
+  // ✅ FIX: Harvest only if we have NO categories (prevents duplicates)
+  if (!entries.some(e => e.kind === 'category')) {
     entries.push(...harvestFromHomeIcons());
   }
+
   return entries;
 }
 
@@ -540,7 +522,7 @@ function renderResults(list, q){
     row.setAttribute('role','option');
     row.dataset.index = String(i);
 
-    // Clicking the left side refines the query (no navigation)
+    // Left: refine query (no nav)
     const left = document.createElement('button');
     left.type = 'button';
     left.className = 'res-title-btn';
@@ -562,7 +544,7 @@ function renderResults(list, q){
       doSearch();
     });
 
-    // Explicit Open button (this is the only thing that navigates)
+    // Right: explicit Open (navigates)
     const open = document.createElement('button');
     open.type = 'button';
     open.className = 'res-open-btn';
