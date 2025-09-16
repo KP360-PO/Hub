@@ -31,10 +31,10 @@ function setActive(view){
   if (v === 'top-performers') setTimeout(() => loadTopPerformers(false), 0);
 // NEW (loads from your Apps Script tab named exactly “PO Spreadsheets”):
 if (v === 'po-spreadsheets') loadLinksGridFromTab('grid-po-spreadsheets', 'PO Spreadsheets');
-  if (v === 'po-tools') ensureLinkGrid('grid-po-tools', PO_TOOLS);
-  if (v === 'marketplaces') ensureLinkGrid('grid-marketplaces', MARKETPLACES);
-  if (v === 'mailboxes') ensureLinkGrid('grid-mailboxes', MAILBOXES);
-  if (v === 'supplier-websites') ensureLinkGrid('grid-supplier-websites', SUPPLIER_WEBSITES);
+  if (v === 'po-tools') loadLinksGridFromTab('grid-po-tools', 'PO Tools');
+  if (v === 'marketplaces') loadLinksGridFromTab('grid-marketplaces', 'Marketplaces');
+  if (v === 'mailboxes') loadLinksGridFromTab('grid-mailboxes', 'Mailboxes' );
+  if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites' );
   if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS);
 }
 
@@ -343,10 +343,7 @@ async function loadTopPerformers(showModal=false){
 */
 
 const PO_SPREADSHEETS = [];   // filled from API
-const PO_TOOLS = [
-  { name: 'Task Tracker', url: 'https://kp360-po.github.io/task-tracker/', note: 'PO tasks dashboard' },
-  { name: 'PO Portal', url: 'https://kp360-po.github.io/KPP/PO_Portal.html', note: 'Projects & docs' },
-];
+const PO_TOOLS = [];
 const MARKETPLACES = [];
 const MAILBOXES = [];
 const SUPPLIER_WEBSITES = [];
