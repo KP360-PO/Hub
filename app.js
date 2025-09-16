@@ -415,7 +415,7 @@ function linkCard({name, url, note}){
   return a;
 }
 
-/* ========= SEARCH (icons + inside icons) ========= */
+/* ========= SEARCH (icons + inside icons) — LIST ONLY + OPEN BUTTON ========= */
 const CATALOG = [
   { page:'po-projects',   title:'PO Projects',   keywords:['projects','po','portal','docs','kpp'], items: ()=>[] },
   { page:'supplier-contacts', title:'Supplier Contacts', keywords:['contacts','vendors','phone','email','supplier'], items: ()=>[] },
@@ -436,75 +436,124 @@ const CATALOG = [
 function buildIndex(){
   const entries = [];
   CATALOG.forEach(cat => {
-    entries.push({ kind:'category', page:cat.page, title:cat.title, subtitle:'Open section', haystack:(cat.title+' '+cat.keywords.join(' ')).toLowerCase() });
+    entries.push({
+      kind:'category',
+      page:cat.page,
+      title:cat.title,
+      subtitle:'Section',
+      url:'',
+      haystack:(cat.title+' '+cat.keywords.join(' ')).toLowerCase()
+    });
     try{
       (cat.items()||[]).forEach(it => {
         const hs = [(it.name||''), (it.note||''), (it.url||''), cat.title, ...(cat.keywords||[])].join(' ').toLowerCase();
-        entries.push({ kind:'item', page:cat.page, title:it.name||'Untitled', subtitle:(it.note||cat.title), url:it.url||'', haystack:hs });
+        entries.push({
+          kind:'item',
+          page:cat.page,
+          title:it.name||'Untitled',
+          subtitle:(it.note||cat.title),
+          url:it.url||'',
+          haystack:hs
+        });
       });
     }catch(_e){}
   });
   return entries;
 }
-const searchInput = document.getElementById('globalSearch');
-const searchBtn = document.getElementById('searchBtn');
-const resultsEl = document.getElementById('searchResults');
-let indexCache = null;
+
+const searchInput  = document.getElementById('globalSearch');
+const searchBtn    = document.getElementById('searchBtn');
+const resultsEl    = document.getElementById('searchResults');
+let indexCache     = null;
+
 function ensureIndex(){ if(!indexCache) indexCache = buildIndex(); return indexCache; }
 
 function search(q){
   const query = (q||'').trim().toLowerCase();
-  const res = [];
-  if (!query) return res;
+  if (!query) return [];
   const idx = ensureIndex();
+  const res = [];
   idx.forEach(e => { if (e.haystack.includes(query)) res.push(e); });
   res.sort((a,b)=>{
-    if(a.kind!==b.kind) return a.kind==='item' ? -1 : 1;
-    const ad = (a.title.toLowerCase().indexOf(query)); const bd = (b.title.toLowerCase().indexOf(query));
+    if(a.kind!==b.kind) return a.kind==='item' ? -1 : 1; // items first
+    const ad = a.title.toLowerCase().indexOf(query);
+    const bd = b.title.toLowerCase().indexOf(query);
     return (ad<0?999:ad) - (bd<0?999:bd);
   });
-  return res.slice(0, 20);
+  return res.slice(0, 30);
 }
-function renderResults(list){
+
+function renderResults(list, q){
   resultsEl.innerHTML = '';
   if (!list.length){ resultsEl.classList.remove('visible'); return; }
+
+  const header = document.createElement('div');
+  header.className = 'res-header';
+  header.textContent = `Results for “${q}” (${list.length})`;
+  resultsEl.appendChild(header);
+
   list.forEach((e,i)=>{
     const item = document.createElement('div');
     item.className = 'res-item'; item.role='option'; item.dataset.index=String(i);
-    item.innerHTML = `
+
+    // Title (click = refine only)
+    const title = document.createElement('button');
+    title.type = 'button';
+    title.className = 'res-title-btn';
+    title.innerHTML = `
       <div class="res-ico">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           ${e.kind==='item' ? '<path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>' : '<circle cx="12" cy="12" r="9"/>'}
         </svg>
       </div>
       <div class="res-main">
-        <div class="res-title">${e.title}</div>
-        <div class="res-sub">${e.subtitle || (e.kind==='item' ? 'Link' : 'Section')} · <em>${e.page}</em></div>
-      </div>`;
-    item.addEventListener('click', ()=> actOnResult(e));
+        <div class="res-title-text">${e.title}</div>
+        <div class="res-sub">${e.subtitle} · <em>${e.page}</em>${e.url ? ` · <span class="res-url">${e.url}</span>`:''}</div>
+      </div>
+    `;
+    title.addEventListener('click', ()=>{
+      searchInput.value = e.title;
+      doSearch();
+    });
+
+    // Open button (click = navigate)
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'res-open-btn';
+    open.title = 'Open';
+    open.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>`;
+
+    open.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      // open section
+      setActive(e.page);
+      // and if item with URL, open link in new tab
+      if (e.kind==='item' && e.url){
+        try{ window.open(e.url, '_blank', 'noopener'); }catch(_){ location.href = e.url; }
+      }
+    });
+
+    item.append(title, open);
     resultsEl.appendChild(item);
   });
   resultsEl.classList.add('visible');
 }
-function actOnResult(e){
-  setActive(e.page);
-  if (e.kind==='item' && e.url){
-    try{ window.open(e.url, '_blank', 'noopener'); }catch(_){ location.href = e.url; }
-  }
-  resultsEl.classList.remove('visible');
-}
+
 function doSearch(){
-  const q = searchInput.value;
+  const q = (searchInput.value||'').trim();
   const res = search(q);
-  if (res.length){ renderResults(res); }
-  else { resultsEl.classList.remove('visible'); }
+  if (res.length){ renderResults(res, q); }
+  else { resultsEl.classList.remove('visible'); resultsEl.innerHTML=''; }
 }
-let t=null; searchInput.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(doSearch, 120); });
-searchBtn.addEventListener('click', doSearch);
+
+/* events: no auto-open on Enter */
+let t=null;
+searchInput.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(doSearch, 120); });
+if (searchBtn) searchBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSearch(); });
 document.addEventListener('click', (e)=>{ if (!e.target.closest('.search')) resultsEl.classList.remove('visible'); });
 searchInput.addEventListener('keydown', (e)=>{
-  if (e.key==='Enter'){ const res = search(searchInput.value); if (res.length){ actOnResult(res[0]); } e.preventDefault(); }
-  if (e.key==='Escape') resultsEl.classList.remove('visible');
+  if (e.key==='Enter'){ e.preventDefault(); doSearch(); } // just update results
+  if (e.key==='Escape'){ resultsEl.classList.remove('visible'); }
 });
 
 /* ===== Initial triggers ===== */
