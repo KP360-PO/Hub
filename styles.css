@@ -308,6 +308,7 @@ body.dark .res-ico{ background: linear-gradient(180deg,#0b1220,#0f172a) }
 .res-url{ color: var(--res-url); text-decoration:none; word-break:break-all }
 
 /* Right button */
+/* keep a neutral chip for the Open button */
 .res-open-btn{
   background: var(--res-open-bg);
   color: var(--res-title);
@@ -315,7 +316,13 @@ body.dark .res-ico{ background: linear-gradient(180deg,#0b1220,#0f172a) }
   padding:.28rem .4rem; border-radius:.45rem; line-height:0; cursor:pointer;
   transition: filter .15s ease, background .15s ease;
 }
-.res-open-btn:hover{ filter: brightness(.98) }
+.res-open-btn svg{ stroke: currentColor; width:16px; height:16px; display:block; }
+
+body.dark .res-open-btn{
+  background:#0f172a;       /* matches your dark dropdown */
+  color:#e5e7eb;            /* light stroke on dark */
+}
+.res-open-btn:hover{ filter:brightness(.98); }
 
 /* Keyboard focus */
 .res-title-btn:focus-visible,
@@ -371,8 +378,7 @@ body.dark{
 }
 
 /* No unexpected blue from buttons on focus/active */
-.res-title-btn,
-.res-open-btn {
+.res-title-btn {
   background: transparent !important;
   -webkit-appearance: none;
   appearance: none;
