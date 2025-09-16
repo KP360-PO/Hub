@@ -1,13 +1,14 @@
-<script>
+
 /* ========= Router & Theme ========= */
-const pages = Array.from(document.querySelectorAll('.page'));
+// lazy lookup so it works even if this script loads before DOM
+function getPages(){ return Array.from(document.querySelectorAll('.page')); }
 const footer = document.getElementById('footer');
 const themeToggle = document.getElementById('themeToggle');
 
 const sunSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>`;
 const moonSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
-function setThemeIcon(mode){ themeToggle.innerHTML = (mode === 'dark') ? sunSVG : moonSVG; }
+function setThemeIcon(mode){ if (themeToggle) themeToggle.innerHTML = (mode === 'dark') ? sunSVG : moonSVG; }
 function applyTheme(mode){
   if(mode==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark');
   localStorage.setItem('theme',mode); setThemeIcon(mode);
@@ -18,28 +19,39 @@ applyTheme(saved ? saved : (window.matchMedia('(prefers-color-scheme: dark)').ma
 
 function setActive(view){
   const v = view || 'home';
-  pages.forEach(p => p.classList.toggle('active', p.getAttribute('data-page') === v));
+
+  // toggle active page (safe even if pages weren’t present at script eval time)
+  getPages().forEach(p => p.classList.toggle('active', p.getAttribute('data-page') === v));
+
   const hash = v === 'home' ? '#home' : '#' + v;
   if (location.hash !== hash) history.pushState({view:v}, '', hash);
-  window.scrollTo({top:0, behavior:'smooth'});
+  try { window.scrollTo({top:0, behavior:'smooth'}); } catch(_) {}
 
+  // footer + padding guards
   const slim = v !== 'home';
-  footer.classList.toggle('slim', slim);
-  document.documentElement.style.setProperty('--footer-h', slim ? '24px' : '36px');
-  document.body.style.paddingBottom = getComputedStyle(document.documentElement).getPropertyValue('--footer-h').trim();
+  if (footer) footer.classList.toggle('slim', slim);
+  try{
+    document.documentElement.style.setProperty('--footer-h', slim ? '24px' : '36px');
+    const fh = getComputedStyle(document.documentElement).getPropertyValue('--footer-h').trim();
+    document.body.style.paddingBottom = fh;
+  }catch(_){}
 
-  if (v === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
-  if (v === 'top-performers') setTimeout(() => loadTopPerformers(false), 0);
+  // Page-specific loaders
+  try{
+    if (v === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
+    if (v === 'top-performers') setTimeout(() => loadTopPerformers(false), 0);
 
-  // Link sections (all from Apps Script tabs)
-  if (v === 'po-spreadsheets')   loadLinksGridFromTab('grid-po-spreadsheets',   'PO Spreadsheets');
-  if (v === 'po-tools')          loadLinksGridFromTab('grid-po-tools',          'PO Tools');
-  if (v === 'marketplaces')      loadLinksGridFromTab('grid-marketplaces',      'Marketplaces');
-  if (v === 'mailboxes')         loadLinksGridFromTab('grid-mailboxes',         'Mailboxes');
-  if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites');
+    // Link sections (Apps Script tabs)
+    if (v === 'po-spreadsheets')   loadLinksGridFromTab('grid-po-spreadsheets',   'PO Spreadsheets');
+    if (v === 'po-tools')          loadLinksGridFromTab('grid-po-tools',          'PO Tools');
+    if (v === 'marketplaces')      loadLinksGridFromTab('grid-marketplaces',      'Marketplaces');
+    if (v === 'mailboxes')         loadLinksGridFromTab('grid-mailboxes',         'Mailboxes');
+    if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites');
 
-  // SOPs still manual array
-  if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS);
+    if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS); // still manual unless you add a sheet
+  }catch(err){
+    console.error('[setActive] loader error:', err);
+  }
 }
 
 document.addEventListener('click', (e)=>{
@@ -288,7 +300,7 @@ function openTPModalSkeleton(){
   for (let i=0;i<8;i++){ const c=document.createElement('div'); c.className='cell'; skeleton.appendChild(c); }
   body.appendChild(skeleton);
   const grid = document.createElement('div'); grid.className='tp-grid'; grid.style.display='none'; body.appendChild(grid);
-  modal.append(head,body); overlay.appendChild(modal); document.body.appendChild(overlay);
+  modal.append(head,body); overlay.appendChild(overlay); document.body.appendChild(overlay);
 }
 function fillTPModal(list, monthLabel){
   const overlay = document.querySelector('.tp-overlay'); if (!overlay) return;
@@ -342,42 +354,21 @@ async function loadTopPerformers(showModal=false){
 }
 
 /* ========= Link Grids (auto from Apps Script) ========= */
-/* Expected columns (case-insensitive): Title | Description | Link */
-
 const PO_SPREADSHEETS   = [];
 const PO_TOOLS          = [];
 const MARKETPLACES      = [];
 const MAILBOXES         = [];
 const SUPPLIER_WEBSITES = [];
-const SOP_LINKS         = []; // still manual unless you add an Apps Script tab
+const SOP_LINKS         = [];
 
-// Apps Script tab name -> in-memory array used by search/catalog
+// registry so search sees items after prefetch
 const TAB_REGISTRY = {
   'PO Spreadsheets'  : PO_SPREADSHEETS,
   'PO Tools'         : PO_TOOLS,
   'Marketplaces'     : MARKETPLACES,
   'Mailboxes'        : MAILBOXES,
   'Supplier Websites': SUPPLIER_WEBSITES,
-  // 'SOPs': SOP_LINKS, // uncomment if you move SOPs into a sheet
 };
-
-function mapRowsToLinks(headers, rows){
-  const idx = {};
-  headers.forEach((h,i)=> idx[String(h||'').trim().toLowerCase()] = i);
-
-  const iTitle = idx['title'] ?? idx['name'] ?? 0;
-  const iDesc  = idx['description'] ?? idx['note'] ?? -1;
-  const iLink  = idx['link'] ?? idx['url'] ?? -1;
-
-  return rows
-    .map(r => Array.isArray(r) ? r : headers.map(h=>valueFromObj(r,h)))
-    .map(r => ({
-      name:  (r[iTitle] ?? '').toString().trim(),
-      note:  (iDesc >= 0 ? (r[iDesc] ?? '') : '').toString().trim(),
-      url:   (iLink >= 0 ? (r[iLink] ?? '') : '').toString().trim(),
-    }))
-    .filter(it => it.name || it.url);
-}
 
 async function fetchSheet(sheetName){
   const url = SUPPLIER_API + '?sheet=' + encodeURIComponent(sheetName);
@@ -429,7 +420,6 @@ function ensureLinkGrid(containerId, items){
   el.dataset.rendered = '1';
 }
 
-// Load a “links grid” section from a tab and render it + update in-memory array
 async function loadLinksGridFromTab(containerId, tabName){
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -438,10 +428,8 @@ async function loadLinksGridFromTab(containerId, tabName){
   try{
     const { headers, rows } = await fetchSheetRows(tabName);
     const items = rowsToLinkItems(headers, rows);
-
     const bucket = TAB_REGISTRY[tabName];
-    if (bucket) bucket.splice(0, bucket.length, ...items); // keep search index in sync
-
+    if (bucket) bucket.splice(0, bucket.length, ...items); // keep search data fresh
     buildLinkGrid(container, items);
   }catch(err){
     console.error('Links grid load error:', err);
@@ -460,7 +448,7 @@ const CATALOG = [
   { page:'marketplace-performance', title:'Marketplace Performance', keywords:['kpi','revenue','conversion','marketplace','performance'], items: ()=>[] },
   { page:'top-performers', title:'Top Performers', keywords:['awards','recognition','employees'], items: ()=>[] },
 
-  // All these now draw from Apps Script
+  // now live from Apps Script
   { page:'po-spreadsheets',   title:'PO Spreadsheets',   keywords:['sheets','spreadsheets','gdrive','excel'], items: ()=> PO_SPREADSHEETS },
   { page:'po-tools',          title:'PO Tools',          keywords:['tools','utility','automation','dashboard'], items: ()=> PO_TOOLS },
   { page:'marketplaces',      title:'Marketplaces',      keywords:['amazon','ebay','walmart','marketplace','seller'], items: ()=> MARKETPLACES },
@@ -501,24 +489,12 @@ function buildIndex(){
     });
     try{
       (cat.items()||[]).forEach(it => {
-        const hs = [
-          (it.name||''), (it.note||''), (it.url||''),
-          cat.title, ...(cat.keywords||[])
-        ].join(' ').toLowerCase();
-        entries.push({
-          kind:'item',
-          page:cat.page,
-          title:it.name||'Untitled',
-          subtitle:(it.note||cat.title),
-          url:it.url||'',
-          haystack:hs
-        });
+        const hs = [(it.name||''), (it.note||''), (it.url||''), cat.title, ...(cat.keywords||[])].join(' ').toLowerCase();
+        entries.push({ kind:'item', page:cat.page, title:it.name||'Untitled', subtitle:(it.note||cat.title), url:it.url||'', haystack:hs });
       });
     }catch(_e){}
   });
-  if (!entries.some(e => e.kind === 'category')) {
-    entries.push(...harvestFromHomeIcons());
-  }
+  if (!entries.some(e => e.kind === 'category')) entries.push(...harvestFromHomeIcons());
   return entries;
 }
 
@@ -627,19 +603,13 @@ document.addEventListener('click', (e)=>{ if (!e.target.closest('.search')) resu
 document.addEventListener('DOMContentLoaded', () => {
   const initial = (location.hash || '#home').replace('#','') || 'home';
 
-  // Show the Top Performers modal once on home
-  if (initial === 'home') {
-    openTPModalSkeleton();
-    loadTopPerformers(true);
-  } else {
-    loadTopPerformers(false);
-  }
+  if (initial === 'home') { openTPModalSkeleton(); loadTopPerformers(true); }
+  else { loadTopPerformers(false); }
 
-  // Set the active page
   setActive(initial);
 
-  // Prefetch all link tabs so global search has items right away
-  const TABS_TO_PREFETCH = Object.keys(TAB_REGISTRY); // ['PO Spreadsheets','PO Tools','Marketplaces','Mailboxes','Supplier Websites']
+  // Prefetch tabs so search is ready quickly
+  const TABS_TO_PREFETCH = Object.keys(TAB_REGISTRY);
   Promise.all(
     TABS_TO_PREFETCH.map(tab =>
       fetchSheetRows(tab)
@@ -647,14 +617,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const items = rowsToLinkItems(headers, rows);
           TAB_REGISTRY[tab].splice(0, TAB_REGISTRY[tab].length, ...items);
         })
-        .catch(()=>{/* silent */})
+        .catch(()=>{})
     )
   );
 
-  // If user deep-linked to contacts, kick off the fetch
-  if (initial === 'supplier-contacts') {
-    setTimeout(loadSupplierContacts, 0);
-  }
+  if (initial === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
 
   console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
 });
@@ -685,7 +652,7 @@ function rowsToLinkItems(headers, rows){
              .filter(it => it.name && it.url);
 }
 
-// Load a “links grid” section from a tab and render it (wrapper used earlier)
+// wrapper used earlier
 async function loadLinksGridFromTab(containerId, tabName){
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -701,4 +668,3 @@ async function loadLinksGridFromTab(containerId, tabName){
     container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
   }
 }
-</script>
