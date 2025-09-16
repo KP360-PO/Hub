@@ -29,7 +29,8 @@ function setActive(view){
 
   if (v === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
   if (v === 'top-performers') setTimeout(() => loadTopPerformers(false), 0);
-  if (v === 'po-spreadsheets') ensureLinkGrid('grid-po-spreadsheets', PO_SPREADSHEETS);
+// NEW (loads from your Apps Script tab named exactly “PO Spreadsheets”):
+if (v === 'po-spreadsheets') loadLinksGridFromTab('grid-po-spreadsheets', 'PO Spreadsheets');
   if (v === 'po-tools') ensureLinkGrid('grid-po-tools', PO_TOOLS);
   if (v === 'marketplaces') ensureLinkGrid('grid-marketplaces', MARKETPLACES);
   if (v === 'mailboxes') ensureLinkGrid('grid-mailboxes', MAILBOXES);
@@ -605,3 +606,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
 });
+
+// Fetch a {headers, rows} payload from Apps Script for a given tab
+async function fetchSheetRows(tabName){
+  const url = SUPPLIER_API + "?sheet=" + encodeURIComponent(tabName);
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  const raw = await getJSON(res);
+  if (raw && raw.error) throw new Error(raw.error);
+  return normalizeToHeadersRows(raw);
+}
+
+// Map rows -> [{ name, url, note }]
+function rowsToLinkItems(headers, rows){
+  const idx = {};
+  headers.forEach((h,i)=>{ idx[(h||'').toString().trim().toLowerCase()] = i; });
+
+  const iName = idx['name'] ?? idx['title'] ?? 0;
+  const iUrl  = idx['url']  ?? idx['link']  ?? 1;
+  const iNote = idx['note'] ?? idx['desc']  ?? idx['description'] ?? -1;
+
+  return rows.map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
+             .map(r => ({
+               name: (r[iName]??'').toString().trim(),
+               url:  (r[iUrl ]??'').toString().trim(),
+               note: (iNote>-1 ? (r[iNote]??'') : '').toString().trim()
+             }))
+             .filter(it => it.name && it.url);
+}
+
+// Load a “links grid” section from a tab and render it
+async function loadLinksGridFromTab(containerId, tabName){
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // lightweight loading state
+  container.innerHTML = '<div class="res-sub" style="padding:.5rem">Loading…</div>';
+
+  try{
+    const { headers, rows } = await fetchSheetRows(tabName);
+    const items = rowsToLinkItems(headers, rows);
+    buildLinkGrid(container, items);
+  }catch(err){
+    console.error('Links grid load error:', err);
+    container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
+  }
+}
