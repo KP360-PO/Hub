@@ -300,8 +300,13 @@ function openTPModalSkeleton(){
   for (let i=0;i<8;i++){ const c=document.createElement('div'); c.className='cell'; skeleton.appendChild(c); }
   body.appendChild(skeleton);
   const grid = document.createElement('div'); grid.className='tp-grid'; grid.style.display='none'; body.appendChild(grid);
-  modal.append(head,body); overlay.appendChild(overlay); document.body.appendChild(overlay);
+  modal.append(head,body);
+
+  // ✅ correct: append the modal to the overlay, then the overlay to the body
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 }
+
 function fillTPModal(list, monthLabel){
   const overlay = document.querySelector('.tp-overlay'); if (!overlay) return;
   const body = overlay.querySelector('.tp-body');
