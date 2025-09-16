@@ -124,3 +124,8 @@ body.dark .contacts-table th{background:linear-gradient(180deg, #0b1220, #111827
 body.dark .link-card .lc-ico{background:linear-gradient(180deg,#0b1220,#0f172a)}
 .link-card strong{display:block; font-size:.98rem}
 .link-card small{display:block; color:var(--ink-2)}
+
+/* Smooth image reveal */
+.tp-card img{ transition: filter .25s ease, opacity .2s }
+.tp-card img.img-loading{ filter: blur(8px); opacity:.7 }
+
