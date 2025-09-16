@@ -415,7 +415,9 @@ function linkCard({name, url, note}){
   return a;
 }
 
-/* ========= SEARCH (icons + inside icons) — LIST ONLY + OPEN BUTTON ========= */
+/* ========= SEARCH (icons + inside icons) — LIST ONLY + OPEN BUTTON (robust) ========= */
+
+// 1) Catalog (unchanged)
 const CATALOG = [
   { page:'po-projects',   title:'PO Projects',   keywords:['projects','po','portal','docs','kpp'], items: ()=>[] },
   { page:'supplier-contacts', title:'Supplier Contacts', keywords:['contacts','vendors','phone','email','supplier'], items: ()=>[] },
@@ -433,6 +435,26 @@ const CATALOG = [
   { page:'sops',           title:'SOPs',         keywords:['standard operating procedures','guidelines','policy','process','how-to'], items: ()=> SOP_LINKS },
 ];
 
+// 2) Fallback: harvest home icons so results still work even if arrays are empty
+function harvestFromHomeIcons(){
+  const entries = [];
+  document.querySelectorAll('.categories .category').forEach(cat=>{
+    const page = cat.getAttribute('data-view') || '';
+    const title = (cat.querySelector('.title')?.textContent || '').trim();
+    if (!page || !title) return;
+    entries.push({
+      kind:'category',
+      page,
+      title,
+      subtitle:'Section',
+      url:'',
+      haystack:(title + ' ' + page.replace(/-/g,' ')).toLowerCase()
+    });
+  });
+  return entries;
+}
+
+// 3) Build a fresh index (no caching) so updates appear immediately
 function buildIndex(){
   const entries = [];
   CATALOG.forEach(cat => {
@@ -442,11 +464,14 @@ function buildIndex(){
       title:cat.title,
       subtitle:'Section',
       url:'',
-      haystack:(cat.title+' '+cat.keywords.join(' ')).toLowerCase()
+      haystack:(cat.title + ' ' + (cat.keywords||[]).join(' ')).toLowerCase()
     });
     try{
       (cat.items()||[]).forEach(it => {
-        const hs = [(it.name||''), (it.note||''), (it.url||''), cat.title, ...(cat.keywords||[])].join(' ').toLowerCase();
+        const hs = [
+          (it.name||''), (it.note||''), (it.url||''),
+          cat.title, ...(cat.keywords||[])
+        ].join(' ').toLowerCase();
         entries.push({
           kind:'item',
           page:cat.page,
@@ -458,29 +483,46 @@ function buildIndex(){
       });
     }catch(_e){}
   });
+
+  // If there are no items at all, add DOM-harvested categories so basic searches still work
+  if (!entries.some(e => e.kind === 'item')) {
+    entries.push(...harvestFromHomeIcons());
+  }
   return entries;
 }
 
+// 4) DOM hooks + guard
 const searchInput  = document.getElementById('globalSearch');
 const searchBtn    = document.getElementById('searchBtn');
 const resultsEl    = document.getElementById('searchResults');
-let indexCache     = null;
 
-function ensureIndex(){ if(!indexCache) indexCache = buildIndex(); return indexCache; }
+function domReadyForSearch(){
+  if (!searchInput || !resultsEl) {
+    console.error('[Portal] Missing #globalSearch or #searchResults in index.html');
+    return false;
+  }
+  return true;
+}
 
-function search(q){
-  const query = (q||'').trim().toLowerCase();
-  if (!query) return [];
-  const idx = ensureIndex();
-  const res = [];
-  idx.forEach(e => { if (e.haystack.includes(query)) res.push(e); });
+// 5) Search + render (no auto-open)
+function doSearch(){
+  if (!domReadyForSearch()) return;
+
+  const q = (searchInput.value||'').trim().toLowerCase();
+  if (!q) { resultsEl.classList.remove('visible'); resultsEl.innerHTML=''; return; }
+
+  const idx = buildIndex();
+  const res = idx.filter(e => e.haystack.includes(q));
+
+  // Sort: items first, then by earliest match in title
   res.sort((a,b)=>{
-    if(a.kind!==b.kind) return a.kind==='item' ? -1 : 1; // items first
-    const ad = a.title.toLowerCase().indexOf(query);
-    const bd = b.title.toLowerCase().indexOf(query);
+    if (a.kind!==b.kind) return a.kind==='item' ? -1 : 1;
+    const ad = a.title.toLowerCase().indexOf(q);
+    const bd = b.title.toLowerCase().indexOf(q);
     return (ad<0?999:ad) - (bd<0?999:bd);
   });
-  return res.slice(0, 30);
+
+  renderResults(res.slice(0, 30), q);
 }
 
 function renderResults(list, q){
@@ -493,68 +535,71 @@ function renderResults(list, q){
   resultsEl.appendChild(header);
 
   list.forEach((e,i)=>{
-    const item = document.createElement('div');
-    item.className = 'res-item'; item.role='option'; item.dataset.index=String(i);
+    const row = document.createElement('div');
+    row.className = 'res-item';
+    row.setAttribute('role','option');
+    row.dataset.index = String(i);
 
-    // Title (click = refine only)
-    const title = document.createElement('button');
-    title.type = 'button';
-    title.className = 'res-title-btn';
-    title.innerHTML = `
+    // Clicking the left side refines the query (no navigation)
+    const left = document.createElement('button');
+    left.type = 'button';
+    left.className = 'res-title-btn';
+    left.innerHTML = `
       <div class="res-ico">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          ${e.kind==='item' ? '<path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>' : '<circle cx="12" cy="12" r="9"/>'}
+          ${e.kind==='item'
+            ? '<path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>'
+            : '<circle cx="12" cy="12" r="9"/>'}
         </svg>
       </div>
       <div class="res-main">
         <div class="res-title-text">${e.title}</div>
-        <div class="res-sub">${e.subtitle} · <em>${e.page}</em>${e.url ? ` · <span class="res-url">${e.url}</span>`:''}</div>
+        <div class="res-sub">${e.subtitle || (e.kind==='item' ? 'Link' : 'Section')} · <em>${e.page}</em>${e.url ? ` · <span class="res-url">${e.url}</span>`:''}</div>
       </div>
     `;
-    title.addEventListener('click', ()=>{
+    left.addEventListener('click', ()=>{
       searchInput.value = e.title;
       doSearch();
     });
 
-    // Open button (click = navigate)
+    // Explicit Open button (this is the only thing that navigates)
     const open = document.createElement('button');
     open.type = 'button';
     open.className = 'res-open-btn';
     open.title = 'Open';
-    open.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>`;
-
+    open.innerHTML = `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/>
+      </svg>`;
     open.addEventListener('click', (ev)=>{
       ev.stopPropagation();
-      // open section
       setActive(e.page);
-      // and if item with URL, open link in new tab
       if (e.kind==='item' && e.url){
         try{ window.open(e.url, '_blank', 'noopener'); }catch(_){ location.href = e.url; }
       }
     });
 
-    item.append(title, open);
-    resultsEl.appendChild(item);
+    row.append(left, open);
+    resultsEl.appendChild(row);
   });
+
   resultsEl.classList.add('visible');
 }
 
-function doSearch(){
-  const q = (searchInput.value||'').trim();
-  const res = search(q);
-  if (res.length){ renderResults(res, q); }
-  else { resultsEl.classList.remove('visible'); resultsEl.innerHTML=''; }
+// 6) Events (no auto-open on Enter)
+let _searchDebounce=null;
+if (searchInput) {
+  searchInput.addEventListener('input', ()=>{
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(doSearch, 120);
+  });
+  searchInput.addEventListener('keydown', (e)=>{
+    if (e.key==='Enter'){ e.preventDefault(); doSearch(); }
+    if (e.key==='Escape'){ resultsEl.classList.remove('visible'); }
+  });
 }
-
-/* events: no auto-open on Enter */
-let t=null;
-searchInput.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(doSearch, 120); });
 if (searchBtn) searchBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSearch(); });
 document.addEventListener('click', (e)=>{ if (!e.target.closest('.search')) resultsEl.classList.remove('visible'); });
-searchInput.addEventListener('keydown', (e)=>{
-  if (e.key==='Enter'){ e.preventDefault(); doSearch(); } // just update results
-  if (e.key==='Escape'){ resultsEl.classList.remove('visible'); }
-});
 
 /* ===== Initial triggers ===== */
 document.addEventListener('DOMContentLoaded', () => {
