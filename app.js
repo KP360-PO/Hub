@@ -49,7 +49,7 @@ window.addEventListener('popstate', e=>{
 document.querySelector('.brand')?.addEventListener('click', ()=> setActive('home'));
 
 /* ========= Apps Script Endpoint ========= */
-const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbw1y2WxgBD7HI5crf4ZXvFKrh0lKOHgTs1EjOc4ZWAkRX8OO84aqZGeRDDpr7aN1Zdp8g/exec";
+const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbyaFHqEjtxKFl-NAo2l8ggpEp1rOKwUrNZvrJ4e49CqOQbnWty5bGNfMbFTQi8Ir9Id9Q/exec";
 
 async function getJSON(res){
   const text = await res.text();
