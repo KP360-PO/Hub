@@ -585,13 +585,26 @@ document.addEventListener('click', (e)=>{ if (!e.target.closest('.search')) resu
 
 /* ===== Initial triggers ===== */
 document.addEventListener('DOMContentLoaded', () => {
+  // choose initial view from hash
   const initial = (location.hash || '#home').replace('#','') || 'home';
+
+  // open the Top Performers modal (once) on home
   if (initial === 'home') {
     openTPModalSkeleton();
     loadTopPerformers(true);
   } else {
     loadTopPerformers(false);
   }
+
+  // set the active page
+  setActive(initial);
+
+  // if user deep-linked to contacts, kick off the fetch
+  if (initial === 'supplier-contacts') {
+    setTimeout(loadSupplierContacts, 0);
+  }
+
+  // sanity log so you can verify initialization happened
+  console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
 });
-const initial = (location.hash || '#home').replace('#','');
-if (initial === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
+
