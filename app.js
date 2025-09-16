@@ -337,46 +337,63 @@ async function loadTopPerformers(showModal=false){
   }
 }
 
-/* ========= Link Grids ========= */
-const PO_SPREADSHEETS = [
-  // { name: 'Example Sheet', url: 'https://docs.google.com/spreadsheets/...', note: 'Tracker' },
-];
+/* ========= Link Grids (auto from Apps Script) ========= */
+/* Uses your existing SUPPLIER_API. Expected columns (case-insensitive):
+   Title | Description | Link
+*/
+
+const PO_SPREADSHEETS = [];   // filled from API
 const PO_TOOLS = [
   { name: 'Task Tracker', url: 'https://kp360-po.github.io/task-tracker/', note: 'PO tasks dashboard' },
   { name: 'PO Portal', url: 'https://kp360-po.github.io/KPP/PO_Portal.html', note: 'Projects & docs' },
 ];
-const MARKETPLACES = [
-  // { name: 'Amazon Seller Central', url: 'https://sellercentral.amazon.com', note: 'KP360 store' },
-  // { name: 'eBay Seller Hub', url: 'https://www.ebay.com/sh/ovw', note: 'Marketplace' },
-];
-const MAILBOXES = [
-  // { name: 'PO Team Mailbox', url: 'mailto:po-team@karparts360.com', note: 'Shared inbox' },
-];
-const SUPPLIER_WEBSITES = [
-  // { name: 'Supplier A Portal', url: 'https://supplier-a.example.com', note: 'Orders & tickets' },
-];
-const SOP_LINKS = [
-  // { name: 'Returns SOP', url: 'https://docs.google.com/document/...', note: 'RMA flow' },
-  // { name: 'PO Creation SOP', url: 'https://docs.google.com/document/...', note: 'How to create POs' },
-];
+const MARKETPLACES = [];
+const MAILBOXES = [];
+const SUPPLIER_WEBSITES = [];
+const SOP_LINKS = [];
 
-function ensureLinkGrid(containerId, items){
-  const el = document.getElementById(containerId);
-  if (!el || el.dataset.rendered) return;
-  buildLinkGrid(el, items||[]);
-  el.dataset.rendered = '1';
+/* Small helper (same shape as your contacts normalizer) */
+function mapRowsToLinks(headers, rows){
+  const idx = {};
+  headers.forEach((h,i)=> idx[String(h||'').trim().toLowerCase()] = i);
+
+  const iTitle = idx['title'] ?? idx['name'] ?? 0;
+  const iDesc  = idx['description'] ?? idx['note'] ?? -1;
+  const iLink  = idx['link'] ?? idx['url'] ?? -1;
+
+  return rows
+    .map(r => Array.isArray(r) ? r : headers.map(h=>valueFromObj(r,h)))
+    .map(r => ({
+      name:  (r[iTitle] ?? '').toString().trim(),
+      note:  (iDesc >= 0 ? (r[iDesc] ?? '') : '').toString().trim(),
+      url:   (iLink >= 0 ? (r[iLink] ?? '') : '').toString().trim(),
+    }))
+    .filter(it => it.name || it.url);
 }
+
+async function fetchSheet(sheetName){
+  const url = SUPPLIER_API + '?sheet=' + encodeURIComponent(sheetName);
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const payload = await getJSON(res);
+  if (payload && payload.error) throw new Error(payload.error);
+  const { headers, rows } = normalizeToHeadersRows(payload);
+  return { headers, rows };
+}
+
+/* Builds a grid of link cards */
 function buildLinkGrid(container, items){
   container.innerHTML = '';
   if (!items || !items.length){
     const empty = document.createElement('div');
     empty.className = 'error';
-    empty.textContent = 'No links configured yet. Edit the array in app.js to add items.';
+    empty.textContent = 'No links found.';
     container.appendChild(empty);
     return;
   }
   items.forEach(it => container.appendChild(linkCard(it)));
 }
+
 function linkCard({name, url, note}){
   const a = document.createElement('a');
   a.className = 'link-card';
@@ -397,6 +414,42 @@ function linkCard({name, url, note}){
   `;
   return a;
 }
+
+/* Ensure grid is rendered once per page view */
+function ensureLinkGrid(containerId, items){
+  const el = document.getElementById(containerId);
+  if (!el || el.dataset.rendered) return;
+  buildLinkGrid(el, items||[]);
+  el.dataset.rendered = '1';
+}
+
+/* ===== Loaders wired to your pages ===== */
+async function loadPoSpreadsheets(){
+  const wrap = document.getElementById('grid-po-spreadsheets');
+  if (!wrap) return;
+  wrap.innerHTML = ''; wrap.removeAttribute('data-rendered');
+  try{
+    const { headers, rows } = await fetchSheet('PO Spreadsheets');
+    // Map to [{name, note, url}]
+    const items = mapRowsToLinks(headers, rows);
+    // Fill global array so search picks them up
+    PO_SPREADSHEETS.splice(0, PO_SPREADSHEETS.length, ...items);
+    buildLinkGrid(wrap, PO_SPREADSHEETS);
+  }catch(err){
+    const e = document.createElement('div');
+    e.className = 'error';
+    e.textContent = `Failed to load “PO Spreadsheets”: ${err.message}`;
+    wrap.appendChild(e);
+  }
+}
+
+/* Hook into your router: replace your existing setActive() branch for po-spreadsheets */
+const _oldSetActive = setActive;
+setActive = function(view){
+  _oldSetActive(view);
+  if (view === 'po-spreadsheets') loadPoSpreadsheets();
+  // keep your other branches as-is (po-tools, marketplaces, etc.)
+};
 
 /* ========= SEARCH — list below the bar + explicit Open button ========= */
 
