@@ -184,3 +184,28 @@ body.dark .res-ico{
 }
 .res-open-btn:hover{ filter:brightness(.98); }
 
+/* --- Fix: force light-mode colors for the search dropdown even inside .hero --- */
+.hero .results{
+  color: var(--ink);                 /* base text */
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.hero .results .res-header{
+  color: var(--ink-2);
+  background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.04));
+}
+
+.hero .results .res-item{ color: var(--ink); }
+.hero .results .res-title-text{ color: var(--ink); }
+.hero .results .res-sub,
+.hero .results .res-url{ color: var(--ink-2); }
+
+.hero .results .res-open-btn{
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.hero .results .res-open-btn:hover{ color: var(--ink); }
+
+/* keep your dark-mode overrides as-is */
