@@ -187,8 +187,13 @@ async function loadSupplierContacts(){
   }
 }
 
-/* ========= Top Performers ========= */
+/* ========= Top Performers — FASTER IMAGES ========= */
+/* Use a CDN front for GitHub files (faster edge caching than raw.githubusercontent).
+   Keep your original bases as fallbacks. Update the commit/branch in the path if needed. */
 const PHOTO_BASES = [
+  // jsDelivr (cached CDN for GitHub)
+  "https://cdn.jsdelivr.net/gh/KP360-PO/KPP@a0d4bb8d6909b10d25c517c65568568e4d37580b/path/to/photos/",
+  // Fallbacks
   "https://raw.githubusercontent.com/KP360-PO/KPP/a0d4bb8d6909b10d25c517c65568568e4d37580b/path/to/photos/",
   "https://raw.githubusercontent.com/purchase-order-team/Processors/main/path/to/photos/"
 ];
@@ -196,34 +201,80 @@ function buildPhotoUrl(filename, baseIdx=0){
   const clean = encodeURIComponent(String(filename||'').trim());
   return PHOTO_BASES[baseIdx] + clean;
 }
-function renderTPCard(p){
+/* Tiny inline placeholder so images don’t “pop in” */
+function tinyPlaceholder(text=''){
+  const t = (text||'').slice(0,2).toUpperCase();
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110'>
+       <defs>
+         <linearGradient id='g' x1='0' x2='1'>
+           <stop offset='0' stop-color='#e5e7eb'/><stop offset='1' stop-color='#f3f4f6'/>
+         </linearGradient>
+       </defs>
+       <rect rx='55' ry='55' width='110' height='110' fill='url(#g)'/>
+       <text x='50%' y='55%' font-family='Inter,Arial' font-size='28' font-weight='700'
+             text-anchor='middle' fill='#9ca3af'>${t}</text>
+     </svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+/* One IntersectionObserver for all lazy images */
+let _io;
+function ensureImageObserver(){
+  if (_io) return _io;
+  _io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if (!entry.isIntersecting) return;
+      const img = entry.target;
+      _io.unobserve(img);
+
+      // Attempt via primary CDN; on error, fall back to next base
+      let baseIdx = Number(img.dataset.baseIdx||"0");
+      function setSrc(idx){
+        img.dataset.baseIdx = String(idx);
+        img.src = buildPhotoUrl(img.dataset.file, idx);
+      }
+      img.onload = ()=> img.classList.remove('img-loading');
+      img.onerror = ()=>{
+        const next = baseIdx + 1;
+        if (next < PHOTO_BASES.length){ baseIdx = next; setSrc(next); }
+        else { img.onerror = null; img.src = tinyPlaceholder(''); img.classList.remove('img-loading'); }
+      };
+
+      // kick off actual load
+      setSrc(baseIdx);
+    });
+  }, { rootMargin: "200px 0px", threshold: 0.01 });
+  return _io;
+}
+/* Render a card with lazy/priority loading and blur-up */
+function renderTPCard(p, idx=0){
   const div = document.createElement('div');
   div.className = 'tp-card';
+
   const img = document.createElement('img');
-  img.alt = p.name;
-  img.src = buildPhotoUrl(p.photoFile, 0);
+  img.alt = p.name || 'Photo';
+  img.width = 110;           // reserve layout space to avoid CLS
+  img.height = 110;
+  img.loading = 'lazy';      // hint to browser
+  img.decoding = 'async';
+  img.className = 'img-loading';
+  img.src = tinyPlaceholder(p.name);   // instant low-fi placeholder
+  img.dataset.file = p.photoFile || '';
   img.dataset.baseIdx = "0";
-  img.onerror = () => {
-    const idx = Number(img.dataset.baseIdx || "0");
-    if (idx + 1 < PHOTO_BASES.length){
-      img.dataset.baseIdx = String(idx + 1);
-      img.src = buildPhotoUrl(p.photoFile, idx + 1);
-    } else {
-      img.onerror = null;
-      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
-        `<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110'>
-           <rect width='100%' height='100%' rx='55' ry='55' fill='#e5e7eb'/>
-           <text x='50%' y='52%' font-size='12' text-anchor='middle' fill='#6b7280'>No photo</text>
-         </svg>`
-      );
-    }
-  };
+  // First 4 images: boost above-the-fold perceived speed
+  if (idx < 4) img.fetchPriority = 'high';
+
   const name = document.createElement('div');
   name.className = 'name';
   name.textContent = p.name;
-  div.append(img,name);
+
+  div.append(img, name);
+
+  // Observe for lazy load
+  ensureImageObserver().observe(img);
   return div;
 }
+/* Update buildTPGrid to pass index so first few can get high priority */
 function buildTPGrid(list, note=''){
   const grid = document.getElementById('tp-page-grid'); if(!grid) return;
   grid.innerHTML = "";
@@ -234,7 +285,7 @@ function buildTPGrid(list, note=''){
     grid.appendChild(n);
   }
   if (!list.length) return;
-  list.forEach(p => grid.appendChild(renderTPCard(p)));
+  list.forEach((p,i) => grid.appendChild(renderTPCard(p,i)));
 }
 function openTPModalSkeleton(){
   if (document.querySelector('.tp-overlay')) return;
@@ -258,7 +309,7 @@ function fillTPModal(list, monthLabel){
   const grid = body.querySelector('.tp-grid'); grid.style.display='grid'; grid.innerHTML='';
   overlay.querySelector('.tp-head strong').textContent = `🎉 Top Performers — ${monthLabel || 'Top Performers'}`;
   if (!list || !list.length){ const empty=document.createElement('div'); empty.textContent='No rows in Top Performer sheet.'; empty.style.cssText='color:var(--ink-2)'; grid.appendChild(empty); return; }
-  list.forEach(p => grid.appendChild(renderTPCard(p)));
+  list.forEach((p,i) => grid.appendChild(renderTPCard(p,i)));
 }
 async function loadTopPerformers(showModal=false){
   const grid = document.getElementById('tp-page-grid');
