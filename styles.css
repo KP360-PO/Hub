@@ -235,19 +235,78 @@ body.dark .contacts-table th{ background:linear-gradient(180deg, #0b1220, #11182
 }
 @keyframes shine{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* ---------- Link grids ---------- */
-.links-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px }
+/* ---------- Link grids (pretty cards) ---------- */
+.links-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(180px,22vw,260px),1fr));
+  gap:clamp(.6rem,1.4vw,1rem);
+}
+
 .link-card{
-  background:var(--card); border:1px solid var(--border); border-radius:12px;
-  padding:12px; display:flex; gap:10px; align-items:flex-start
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  grid-template-areas:
+    "ico title open"
+    "ico note  open";
+  align-items:center;
+  gap:.65rem .75rem;
+
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:.85rem .9rem;
+  box-shadow:0 1px 10px rgba(0,0,0,.05);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .2s, background .2s;
 }
+.link-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 22px rgba(0,0,0,.10);
+}
+
 .link-card .lc-ico{
-  flex:0 0 36px; height:36px; border-radius:10px; display:grid; place-items:center;
-  background:linear-gradient(180deg,#f8fafc,#eef2f7)
+  grid-area:ico;
+  width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;flex:0 0 42px;
+  background:radial-gradient(closest-side,#fff 64%,transparent 66%),
+             conic-gradient(var(--ring-steel-from),var(--ring-steel-to));
+  box-shadow:0 6px 14px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.8);
 }
-body.dark .link-card .lc-ico{ background:linear-gradient(180deg,#0b1220,#0f172a) }
-.link-card strong{ display:block; font-size:.98rem }
-.link-card small{ display:block; color:var(--ink-2) }
+body.dark .link-card .lc-ico{
+  background:radial-gradient(closest-side,#0b1220 64%,transparent 66%),
+             conic-gradient(var(--ring-steel-from),var(--ring-steel-to));
+}
+
+.link-card .lc-ico svg{ width:22px;height:22px;color:var(--brand) }
+
+.link-card .lc-title{
+  grid-area:title;
+  font-weight:700;
+  font-size:.98rem;
+  color:var(--ink);
+  line-height:1.2;
+}
+.link-card .lc-note{
+  grid-area:note;
+  font-size:.82rem;
+  color:var(--ink-2);
+  margin-top:.15rem;
+}
+
+.link-card .lc-open{
+  grid-area:open;
+  width:28px;height:28px;
+  border:1px solid var(--border);
+  border-radius:.5rem;
+  display:grid;place-items:center;
+  background:var(--res-open-bg);
+  color:var(--res-title);
+  transition: filter .15s ease, background .15s ease;
+}
+.link-card:hover .lc-open{ filter:brightness(.98) }
+.link-card .lc-open svg{ width:16px;height:16px;stroke:currentColor }
+
+/* make the whole card clickable but keep good focus outline */
+.link-card:focus-visible{ outline:2px solid var(--brand); outline-offset:2px }
 
 /* =========================
    Search Results (dropdown)
