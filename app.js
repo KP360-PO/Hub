@@ -407,25 +407,32 @@ function linkCard({name, url, note}){
   return a;
 }
 /* === Section renderer with built-in search === */
-function renderLinksSection(container, items){
-  // Build shell
+function renderLinksSection(container, items) {
+  // Grab the section's title text (if there is an <h2> in the same section)
+  const section = container.closest('.page, .content') || document;
+  const titleEl = section.querySelector('h2');
+  const titleText = titleEl ? titleEl.textContent.trim() : "";
+
+  // Build header + search bar + links grid
   container.innerHTML = `
-    <div class="links-tools" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem">
-      <input type="search" class="links-filter" placeholder="Search links or hint words…"
-             style="padding:.5rem .6rem;border:1px solid var(--border);border-radius:.5rem;background:var(--card);color:var(--ink);min-width:240px" />
-      <span class="links-count" style="color:var(--ink-2);font-size:.9rem"></span>
+    <div class="section-header">
+      ${titleText ? `<h2>${titleText}</h2>` : ""}
+      <div class="links-tools">
+        <input type="search" class="links-filter" placeholder="Search links or hint words…" />
+        <span class="links-count"></span>
+      </div>
     </div>
     <div class="links-grid"></div>
   `;
 
   const input = container.querySelector('.links-filter');
   const count = container.querySelector('.links-count');
-  const grid  = container.querySelector('.links-grid');
+  const grid = container.querySelector('.links-grid');
 
-  // Helper to (re)render cards
-  function paint(list){
+  // Helper to render links
+  function paint(list) {
     grid.innerHTML = '';
-    if (!list.length){
+    if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'error';
       empty.textContent = 'No links found.';
@@ -433,17 +440,20 @@ function renderLinksSection(container, items){
     } else {
       list.forEach(it => grid.appendChild(linkCard(it)));
     }
-    count.textContent = `${list.length} link${list.length===1?'':'s'}`;
+    count.textContent = `${list.length} link${list.length === 1 ? '' : 's'}`;
   }
 
-  // Initial paint
+  // Initial render
   paint(items || []);
 
-  // Filtering
-  input.addEventListener('input', ()=>{
+  // Filter on input
+  input.addEventListener('input', () => {
     const q = (input.value || '').trim().toLowerCase();
-    if (!q){ paint(items); return; }
-    const filtered = (items||[]).filter(it => (it.haystack || '').includes(q));
+    if (!q) {
+      paint(items);
+      return;
+    }
+    const filtered = (items || []).filter(it => (it.haystack || '').includes(q));
     paint(filtered);
   });
 }
