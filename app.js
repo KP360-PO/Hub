@@ -402,17 +402,27 @@ function linkCard({name, url, note}){
   a.className = 'link-card';
   a.href = url || '#';
   if (url && /^https?:\/\//i.test(url)) { a.target = '_blank'; a.rel = 'noopener'; }
+  a.setAttribute('aria-label', name || 'Link');
+
   a.innerHTML = `
-    <div class="lc-ico">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10 13a5 5 0 0 1 7.07 0l2 2a5 5 0 0 1-7.07 7.07l-2-2" />
-        <path d="M14 11a5 5 0 0 1-7.07 0l-2-2a5 5 0 0 1 7.07-7.07l2 2" />
+    <div class="lc-ico" aria-hidden="true">
+      <!-- chain/link icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 1 0-7.07-7.07l-1.5 1.5" />
+        <path d="M14 11a5 5 0 0 0-7.07 0l-2 2a5 5 0 1 0 7.07 7.07l1.5-1.5" />
       </svg>
     </div>
-    <div>
-      <strong>${name||'Untitled'}</strong>
-      ${note ? `<small>${note}</small>` : ''}
-      ${url ? `<div style="font-size:.75rem;color:var(--ink-2);word-break:break-all">${url}</div>` : ''}
+
+    <div class="lc-title">${name || 'Untitled'}</div>
+    ${note ? `<div class="lc-note">${note}</div>` : `<div class="lc-note"></div>`}
+
+    <div class="lc-open" aria-hidden="true" title="Open">
+      <!-- external/open icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 3h7v7" />
+        <path d="M10 14L21 3" />
+        <path d="M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6" />
+      </svg>
     </div>
   `;
   return a;
