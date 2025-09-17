@@ -17,6 +17,36 @@
 <script defer src="app.js?v=9"></script>
 </head>
 <body>
+  <!-- Passcode Gate -->
+  <div id="lockScreen" style="
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:var(--bg,#f9fafb);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;z-index:9999;
+    font-family:Inter,Arial,sans-serif;text-align:center;
+    transition:opacity .3s ease;">
+    <div style="
+      background:var(--card,#fff);padding:2rem 2.5rem;border-radius:1rem;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);max-width:320px;width:90%;">
+      <h2 style="margin:0 0 1rem;color:var(--ink,#111)">🔒 PO Hub Access</h2>
+      <p style="margin:.5rem 0 1.5rem;color:var(--ink-2,#555);font-size:.95rem">
+        Please enter the passcode to continue.
+      </p>
+      <input type="password" id="passInput" placeholder="Enter passcode"
+        style="padding:.6rem .8rem;border:1px solid var(--border,#ccc);
+        border-radius:.5rem;width:100%;margin-bottom:1rem;
+        background:var(--bg,#fff);color:var(--ink,#111);">
+      <button onclick="checkPasscode()" style="
+        padding:.6rem 1rem;width:100%;border:none;border-radius:.5rem;
+        background:#2563eb;color:white;font-weight:600;cursor:pointer;">
+        Unlock
+      </button>
+      <p id="errorMsg" style="color:#dc2626;display:none;margin-top:.75rem;font-size:.9rem;">
+        Wrong passcode. Try again.
+      </p>
+    </div>
+  </div>
+
+  <!-- Your existing content below -->
   <!-- ===== Header ===== -->
   <header class="site-header" id="header">
     <div class="container header-inner">
