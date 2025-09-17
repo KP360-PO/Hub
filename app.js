@@ -692,3 +692,25 @@ function rowsToLinkItems(headers, rows){
 }
 
 // (no duplicate loadLinksGridFromTab definition)
+
+const CORRECT_PASSCODE = "PO360"; // change this to your passcode
+
+function checkPasscode() {
+  const input = document.getElementById("passInput").value.trim();
+  const error = document.getElementById("errorMsg");
+
+  if (input === CORRECT_PASSCODE) {
+    document.getElementById("lockScreen").style.opacity = "0";
+    setTimeout(() => {
+      document.getElementById("lockScreen").style.display = "none";
+    }, 300);
+    localStorage.setItem("siteUnlocked", "true");
+  } else {
+    error.style.display = "block";
+  }
+}
+
+// Auto-unlock if already unlocked
+if (localStorage.getItem("siteUnlocked") === "true") {
+  document.getElementById("lockScreen").style.display = "none";
+}
