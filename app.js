@@ -406,11 +406,52 @@ function linkCard({name, url, note}){
   `;
   return a;
 }
+/* === Section renderer with built-in search === */
+function renderLinksSection(container, items){
+  // Build shell
+  container.innerHTML = `
+    <div class="links-tools" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem">
+      <input type="search" class="links-filter" placeholder="Search links or hint words…"
+             style="padding:.5rem .6rem;border:1px solid var(--border);border-radius:.5rem;background:var(--card);color:var(--ink);min-width:240px" />
+      <span class="links-count" style="color:var(--ink-2);font-size:.9rem"></span>
+    </div>
+    <div class="links-grid"></div>
+  `;
+
+  const input = container.querySelector('.links-filter');
+  const count = container.querySelector('.links-count');
+  const grid  = container.querySelector('.links-grid');
+
+  // Helper to (re)render cards
+  function paint(list){
+    grid.innerHTML = '';
+    if (!list.length){
+      const empty = document.createElement('div');
+      empty.className = 'error';
+      empty.textContent = 'No links found.';
+      grid.appendChild(empty);
+    } else {
+      list.forEach(it => grid.appendChild(linkCard(it)));
+    }
+    count.textContent = `${list.length} link${list.length===1?'':'s'}`;
+  }
+
+  // Initial paint
+  paint(items || []);
+
+  // Filtering
+  input.addEventListener('input', ()=>{
+    const q = (input.value || '').trim().toLowerCase();
+    if (!q){ paint(items); return; }
+    const filtered = (items||[]).filter(it => (it.haystack || '').includes(q));
+    paint(filtered);
+  });
+}
 
 function ensureLinkGrid(containerId, items){
   const el = document.getElementById(containerId);
   if (!el || el.dataset.rendered) return;
-  buildLinkGrid(el, items||[]);
+  renderLinksSection(el, items||[]);
   el.dataset.rendered = '1';
 }
 
@@ -423,7 +464,7 @@ async function loadLinksGridFromTab(containerId, tabName){
     const items = rowsToLinkItems(headers, rows);
     const bucket = TAB_REGISTRY[tabName];
     if (bucket) bucket.splice(0, bucket.length, ...items); // keep search data fresh
-    buildLinkGrid(container, items);
+    renderLinksSection(container, items); // new search-enabled renderer
   }catch(err){
     console.error('Links grid load error:', err);
     container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
@@ -628,20 +669,26 @@ async function fetchSheetRows(tabName){
   return normalizeToHeadersRows(raw);
 }
 
-// Map rows -> [{ name, url, note }]
+// Map rows -> [{ name, url, note, tags, haystack }]
 function rowsToLinkItems(headers, rows){
   const idx = {};
   headers.forEach((h,i)=>{ idx[(h||'').toString().trim().toLowerCase()] = i; });
   const iName = idx['name'] ?? idx['title'] ?? 0;
   const iUrl  = idx['url']  ?? idx['link']  ?? 1;
   const iNote = idx['note'] ?? idx['desc']  ?? idx['description'] ?? -1;
-  return rows.map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
-             .map(r => ({
-               name: (r[iName]??'').toString().trim(),
-               url:  (r[iUrl ]??'').toString().trim(),
-               note: (iNote>-1 ? (r[iNote]??'') : '').toString().trim()
-             }))
-             .filter(it => it.name && it.url);
+  const iTags = idx['tags'] ?? idx['keywords'] ?? -1;
+
+  return rows
+    .map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
+    .map(r => {
+      const name = (r[iName]??'').toString().trim();
+      const url  = (r[iUrl ]??'').toString().trim();
+      const note = (iNote>-1 ? (r[iNote]??'') : '').toString().trim();
+      const tags = (iTags>-1 ? (r[iTags]??'') : '').toString().trim();
+      const hay  = [name, note, tags, url].join(' ').toLowerCase();
+      return { name, url, note, tags, haystack: hay };
+    })
+    .filter(it => it.name && it.url);
 }
 
 // (no duplicate loadLinksGridFromTab definition)
