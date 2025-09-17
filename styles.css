@@ -671,3 +671,37 @@ body.dark .tp-modal {
   border: 1px solid var(--border); color: var(--ink); box-shadow: var(--shadow);
 }
 body.dark .tp-head { border-bottom: 1px solid var(--border); }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.links-tools {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.links-tools input.links-filter {
+  padding: .4rem .6rem;
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.links-tools .links-count {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
