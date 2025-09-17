@@ -19,7 +19,7 @@ applyTheme(saved ? saved : (window.matchMedia('(prefers-color-scheme: dark)').ma
 function setActive(view){
   const v = view || 'home';
 
-  // toggle active page (safe even if pages weren’t present at script eval time)
+  // toggle active page
   getPages().forEach(p => p.classList.toggle('active', p.getAttribute('data-page') === v));
 
   const hash = v === 'home' ? '#home' : '#' + v;
@@ -46,8 +46,7 @@ function setActive(view){
     if (v === 'marketplaces')      loadLinksGridFromTab('grid-marketplaces',      'Marketplaces');
     if (v === 'mailboxes')         loadLinksGridFromTab('grid-mailboxes',         'Mailboxes');
     if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites');
-    if (v === 'tracker') loadLinksGridFromTab('grid-tracker', 'Trackers');  // <-- add
-
+    if (v === 'tracker')           loadLinksGridFromTab('grid-tracker',           'Trackers');
 
     if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS); // still manual unless you add a sheet
   }catch(err){
@@ -297,8 +296,6 @@ function openTPModalSkeleton(){
   body.appendChild(skeleton);
   const grid = document.createElement('div'); grid.className='tp-grid'; grid.style.display='none'; body.appendChild(grid);
   modal.append(head,body);
-
-  // append the modal to the overlay, then overlay to body
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 }
@@ -360,7 +357,8 @@ const MARKETPLACES      = [];
 const MAILBOXES         = [];
 const SUPPLIER_WEBSITES = [];
 const SOP_LINKS         = [];
-const TRACKERS = [];
+const TRACKERS          = [];
+
 // registry so search sees items after prefetch
 const TAB_REGISTRY = {
   'PO Spreadsheets'  : PO_SPREADSHEETS,
@@ -368,18 +366,8 @@ const TAB_REGISTRY = {
   'Marketplaces'     : MARKETPLACES,
   'Mailboxes'        : MAILBOXES,
   'Supplier Websites': SUPPLIER_WEBSITES,
-  'Trackers': TRACKERS,
+  'Trackers'         : TRACKERS,
 };
-
-async function fetchSheet(sheetName){
-  const url = SUPPLIER_API + '?sheet=' + encodeURIComponent(sheetName);
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const payload = await getJSON(res);
-  if (payload && payload.error) throw new Error(payload.error);
-  const { headers, rows } = normalizeToHeadersRows(payload);
-  return { headers, rows };
-}
 
 function buildLinkGrid(container, items){
   container.innerHTML = '';
@@ -399,7 +387,6 @@ function linkCard({name, url, note}){
   a.href = url || '#';
   if (url && /^https?:\/\//i.test(url)) { a.target = '_blank'; a.rel = 'noopener'; }
   a.setAttribute('aria-label', name || 'Link');
-
   a.innerHTML = `
     <div class="lc-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -431,7 +418,6 @@ async function loadLinksGridFromTab(containerId, tabName){
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '<div class="res-sub" style="padding:.5rem">Loading…</div>';
-
   try{
     const { headers, rows } = await fetchSheetRows(tabName);
     const items = rowsToLinkItems(headers, rows);
@@ -453,7 +439,7 @@ const CATALOG = [
   { page:'task-monitoring',title:'Task Monitoring', keywords:['tasks','tracker','kanban','status'], items: ()=>[] },
   { page:'marketplace-performance', title:'Marketplace Performance', keywords:['kpi','revenue','conversion','marketplace','performance'], items: ()=>[] },
   { page:'top-performers', title:'Top Performers', keywords:['awards','recognition','employees'], items: ()=>[] },
-  { page:'tracker', title:'Tracker', keywords:['status','metrics','tracking'], items: ()=> TRACKERS },
+  { page:'tracker',        title:'Tracker', keywords:['status','metrics','tracking'], items: ()=> TRACKERS },
 
   // now live from Apps Script
   { page:'po-spreadsheets',   title:'PO Spreadsheets',   keywords:['sheets','spreadsheets','gdrive','excel'], items: ()=> PO_SPREADSHEETS },
@@ -461,7 +447,6 @@ const CATALOG = [
   { page:'marketplaces',      title:'Marketplaces',      keywords:['amazon','ebay','walmart','marketplace','seller'], items: ()=> MARKETPLACES },
   { page:'mailboxes',         title:'Mailboxes',         keywords:['inbox','gmail','outlook','email','support'], items: ()=> MAILBOXES },
   { page:'supplier-websites', title:'Supplier Websites', keywords:['supplier','portal','ordering','tickets'], items: ()=> SUPPLIER_WEBSITES },
-
   { page:'sops',              title:'SOPs',              keywords:['standard operating procedures','guidelines','policy','process','how-to'], items: ()=> SOP_LINKS },
 ];
 
@@ -591,46 +576,13 @@ function renderResults(list, q){
   resultsEl.classList.add('visible');
 }
 
-  // Prefer a row with "track" in the title if present, else first valid link
-  const preferred = rows
-    .map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
-    .filter(r => (r[iLink]||'').toString().trim())
-    .sort((a,b)=>{
-      const at = ((iTitle>-1? a[iTitle] : '')||'').toString().toLowerCase();
-      const bt = ((iTitle>-1? b[iTitle] : '')||'').toString().toLowerCase();
-      const ap = at.includes('track') ? 0 : 1;
-      const bp = bt.includes('track') ? 0 : 1;
-      return ap - bp;
-    });
-
-  return preferred.length ? preferred[0][iLink].toString().trim() : '';
-}
-
 /* ========= Global events ========= */
-// Global click handler: navigate SPA pages only
+// SPA navigation only
 document.addEventListener('click', (e)=>{
   const link = e.target.closest('[data-view]');
   if (!link) return;
   e.preventDefault();
   setActive(link.getAttribute('data-view'));
-});
-
-  // Special case: Tracker tile should open the external URL from "Trackers" tab
-  if (view === 'tracker') {
-    e.preventDefault();
-    if (SINGLE_LINKS.tracker) {
-      openExternal(SINGLE_LINKS.tracker);
-      return;
-    }
-    // If not yet loaded, fetch on-demand then open
-    fetchFirstLinkFromTab('Trackers')
-      .then(url => { if (url) openExternal(url); else setActive('tracker'); })
-      .catch(()=> setActive('tracker'));
-    return;
-  }
-
-  e.preventDefault();
-  setActive(view);
 });
 
 window.addEventListener('popstate', e=>{
@@ -660,6 +612,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(()=>{})
     )
   );
+
+  if (initial === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
+
+  console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
+});
+
 // Fetch a {headers, rows} payload from Apps Script for a given tab
 async function fetchSheetRows(tabName){
   const url = SUPPLIER_API + "?sheet=" + encodeURIComponent(tabName);
@@ -686,19 +644,4 @@ function rowsToLinkItems(headers, rows){
              .filter(it => it.name && it.url);
 }
 
-// wrapper used earlier
-async function loadLinksGridFromTab(containerId, tabName){
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '<div class="res-sub" style="padding:.5rem">Loading…</div>';
-  try{
-    const { headers, rows } = await fetchSheetRows(tabName);
-    const items = rowsToLinkItems(headers, rows);
-    const bucket = TAB_REGISTRY[tabName];
-    if (bucket) bucket.splice(0, bucket.length, ...items);
-    buildLinkGrid(container, items);
-  }catch(err){
-    console.error('Links grid load error:', err);
-    container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
-  }
-}
+// (no duplicate loadLinksGridFromTab definition)
