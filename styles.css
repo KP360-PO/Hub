@@ -31,6 +31,43 @@
 }
 body.dark{
   --brand:#60a5fa; --brand-600:#3b82f6;
+/* Default if you don't already have it */
+:root { --header-h: 64px; }
+
+/* Sticky search bar inside each links section (PO Spreadsheets, Marketplaces, Trackers, etc.) */
+.links-tools{
+  position: sticky;
+  top: calc(var(--header-h, 64px) + 8px);  /* sit just under the site header */
+  z-index: 30;
+
+  display: flex;
+  gap: .6rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  padding: .6rem .75rem;
+  margin: 0 0 .75rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: .75rem;
+  backdrop-filter: saturate(140%) blur(4px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+}
+
+/* Input sizing so it doesn’t jump */
+.links-tools .links-filter{
+  flex: 1 1 320px;
+  max-width: 520px;
+  width: min(520px, 100%);
+  padding: .55rem .75rem;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: .6rem;
+  background: var(--card, #fff);
+  color: var(--ink, #111827);
+  outline: none;
+}
+
+.links-count{ color: var(--ink-2, #6b7280); font-size: .9rem; }
 
   --ink:#e5e7eb;
   --ink-2:#9ca3af;
