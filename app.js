@@ -591,25 +591,6 @@ function renderResults(list, q){
   resultsEl.classList.add('visible');
 }
 
-/* ========= Tracker link (from Apps Script) ========= */
-// cache for single external links
-const SINGLE_LINKS = { tracker: '' };
-
-async function fetchFirstLinkFromTab(tabName){
-  const url = SUPPLIER_API + "?sheet=" + encodeURIComponent(tabName);
-  const res = await fetch(url, { cache: "no-store" });
-  if(!res.ok) throw new Error("HTTP " + res.status);
-  const raw = await getJSON(res);
-  if (raw && raw.error) throw new Error(raw.error);
-
-  const { headers, rows } = normalizeToHeadersRows(raw);
-  const idx = {};
-  headers.forEach((h,i)=> idx[(h||'').toString().trim().toLowerCase()] = i);
-
-  const iTitle = idx['title'] ?? idx['name'] ?? -1;
-  const iLink  = idx['link']  ?? idx['url']  ?? -1;
-  if (iLink < 0) return '';
-
   // Prefer a row with "track" in the title if present, else first valid link
   const preferred = rows
     .map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
@@ -626,11 +607,13 @@ async function fetchFirstLinkFromTab(tabName){
 }
 
 /* ========= Global events ========= */
+// Global click handler: navigate SPA pages only
 document.addEventListener('click', (e)=>{
   const link = e.target.closest('[data-view]');
-  if(!link) return;
-
-  const view = link.getAttribute('data-view');
+  if (!link) return;
+  e.preventDefault();
+  setActive(link.getAttribute('data-view'));
+});
 
   // Special case: Tracker tile should open the external URL from "Trackers" tab
   if (view === 'tracker') {
@@ -677,17 +660,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(()=>{})
     )
   );
-
-  // Prefetch the Tracker external link
-  fetchFirstLinkFromTab('Trackers')
-    .then(url => { SINGLE_LINKS.tracker = url || ''; })
-    .catch(()=>{ /* silent */ });
-
-  if (initial === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
-
-  console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
-});
-
 // Fetch a {headers, rows} payload from Apps Script for a given tab
 async function fetchSheetRows(tabName){
   const url = SUPPLIER_API + "?sheet=" + encodeURIComponent(tabName);
