@@ -1,4 +1,3 @@
-
 /* ========= Router & Theme ========= */
 // lazy lookup so it works even if this script loads before DOM
 function getPages(){ return Array.from(document.querySelectorAll('.page')); }
@@ -54,19 +53,10 @@ function setActive(view){
   }
 }
 
-document.addEventListener('click', (e)=>{
-  const link = e.target.closest('[data-view]');
-  if(link){ e.preventDefault(); setActive(link.getAttribute('data-view')); }
-});
-window.addEventListener('popstate', e=>{
-  const v = (e.state && e.state.view) || (location.hash || '#home').replace('#','');
-  setActive(v);
-});
-document.querySelector('.brand')?.addEventListener('click', ()=> setActive('home'));
-
 /* ========= Apps Script Endpoint ========= */
 const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbybraOZcDMkQJe3NLZb1SY9oOZr8LUUsBhxL3ca3Tfg-QiC78Qf4GOoW4Ib0DIYyVFX_A/exec";
 
+/* ========= Small utils ========= */
 async function getJSON(res){
   const text = await res.text();
   try { return JSON.parse(text); } catch(e){ throw new Error('Invalid JSON from API'); }
@@ -97,6 +87,10 @@ function valueFromObj(obj, header){
     if (kl === lower || candidates.includes(kl)) return obj[k] ?? '';
   }
   return '';
+}
+function openExternal(href){
+  try { window.open(href, '_blank', 'noopener'); }
+  catch(_) { location.href = href; }
 }
 
 /* ========= Supplier Contacts ========= */
@@ -302,11 +296,10 @@ function openTPModalSkeleton(){
   const grid = document.createElement('div'); grid.className='tp-grid'; grid.style.display='none'; body.appendChild(grid);
   modal.append(head,body);
 
-  // ✅ correct: append the modal to the overlay, then the overlay to the body
+  // append the modal to the overlay, then overlay to body
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 }
-
 function fillTPModal(list, monthLabel){
   const overlay = document.querySelector('.tp-overlay'); if (!overlay) return;
   const body = overlay.querySelector('.tp-body');
@@ -406,18 +399,14 @@ function linkCard({name, url, note}){
 
   a.innerHTML = `
     <div class="lc-ico" aria-hidden="true">
-      <!-- chain/link icon -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 1 0-7.07-7.07l-1.5 1.5" />
         <path d="M14 11a5 5 0 0 0-7.07 0l-2 2a5 5 0 1 0 7.07 7.07l1.5-1.5" />
       </svg>
     </div>
-
     <div class="lc-title">${name || 'Untitled'}</div>
     ${note ? `<div class="lc-note">${note}</div>` : `<div class="lc-note"></div>`}
-
     <div class="lc-open" aria-hidden="true" title="Open">
-      <!-- external/open icon -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 3h7v7" />
         <path d="M10 14L21 3" />
@@ -599,20 +588,70 @@ function renderResults(list, q){
   resultsEl.classList.add('visible');
 }
 
-// Events
-let _searchDebounce=null;
-if (searchInput) {
-  searchInput.addEventListener('input', ()=>{
-    clearTimeout(_searchDebounce);
-    _searchDebounce = setTimeout(doSearch, 120);
-  });
-  searchInput.addEventListener('keydown', (e)=>{
-    if (e.key==='Enter'){ e.preventDefault(); doSearch(); }
-    if (e.key==='Escape'){ resultsEl.classList.remove('visible'); }
-  });
+/* ========= Tracker link (from Apps Script) ========= */
+// cache for single external links
+const SINGLE_LINKS = { tracker: '' };
+
+async function fetchFirstLinkFromTab(tabName){
+  const url = SUPPLIER_API + "?sheet=" + encodeURIComponent(tabName);
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  const raw = await getJSON(res);
+  if (raw && raw.error) throw new Error(raw.error);
+
+  const { headers, rows } = normalizeToHeadersRows(raw);
+  const idx = {};
+  headers.forEach((h,i)=> idx[(h||'').toString().trim().toLowerCase()] = i);
+
+  const iTitle = idx['title'] ?? idx['name'] ?? -1;
+  const iLink  = idx['link']  ?? idx['url']  ?? -1;
+  if (iLink < 0) return '';
+
+  // Prefer a row with "track" in the title if present, else first valid link
+  const preferred = rows
+    .map(r => Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h)))
+    .filter(r => (r[iLink]||'').toString().trim())
+    .sort((a,b)=>{
+      const at = ((iTitle>-1? a[iTitle] : '')||'').toString().toLowerCase();
+      const bt = ((iTitle>-1? b[iTitle] : '')||'').toString().toLowerCase();
+      const ap = at.includes('track') ? 0 : 1;
+      const bp = bt.includes('track') ? 0 : 1;
+      return ap - bp;
+    });
+
+  return preferred.length ? preferred[0][iLink].toString().trim() : '';
 }
-if (searchBtn) searchBtn.addEventListener('click', (e)=>{ e.preventDefault(); doSearch(); });
-document.addEventListener('click', (e)=>{ if (!e.target.closest('.search')) resultsEl.classList.remove('visible'); });
+
+/* ========= Global events ========= */
+document.addEventListener('click', (e)=>{
+  const link = e.target.closest('[data-view]');
+  if(!link) return;
+
+  const view = link.getAttribute('data-view');
+
+  // Special case: Tracker tile should open the external URL from "Trackers" tab
+  if (view === 'tracker') {
+    e.preventDefault();
+    if (SINGLE_LINKS.tracker) {
+      openExternal(SINGLE_LINKS.tracker);
+      return;
+    }
+    // If not yet loaded, fetch on-demand then open
+    fetchFirstLinkFromTab('Trackers')
+      .then(url => { if (url) openExternal(url); else setActive('tracker'); })
+      .catch(()=> setActive('tracker'));
+    return;
+  }
+
+  e.preventDefault();
+  setActive(view);
+});
+
+window.addEventListener('popstate', e=>{
+  const v = (e.state && e.state.view) || (location.hash || '#home').replace('#','');
+  setActive(v);
+});
+document.querySelector('.brand')?.addEventListener('click', ()=> setActive('home'));
 
 /* ===== Initial triggers ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -635,6 +674,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(()=>{})
     )
   );
+
+  // Prefetch the Tracker external link
+  fetchFirstLinkFromTab('Trackers')
+    .then(url => { SINGLE_LINKS.tracker = url || ''; })
+    .catch(()=>{ /* silent */ });
 
   if (initial === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
 
