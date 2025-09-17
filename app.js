@@ -56,7 +56,7 @@ function setActive(view){
 }
 
 /* ========= Apps Script Endpoint ========= */
-const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbybraOZcDMkQJe3NLZb1SY9oOZr8LUUsBhxL3ca3Tfg-QiC78Qf4GOoW4Ib0DIYyVFX_A/exec";
+const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbzV_FMsyjQhtzgTZdb0y0jf9vgq8_ySPY2LEQXN6j9KSLy_z7oTnfDcmOPEQZCyGTm6dw/exec";
 
 /* ========= Small utils ========= */
 async function getJSON(res){
