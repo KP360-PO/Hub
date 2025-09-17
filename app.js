@@ -1,5 +1,4 @@
 /* ========= Router & Theme ========= */
-// lazy lookup so it works even if this script loads before DOM
 function getPages(){ return Array.from(document.querySelectorAll('.page')); }
 const footer = document.getElementById('footer');
 const themeToggle = document.getElementById('themeToggle');
@@ -13,8 +12,7 @@ function applyTheme(mode){
   localStorage.setItem('theme',mode); setThemeIcon(mode);
 }
 themeToggle?.addEventListener('click', ()=> applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
-const saved = localStorage.getItem('theme');
-applyTheme(saved ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
 function setActive(view){
   const v = view || 'home';
@@ -26,9 +24,9 @@ function setActive(view){
   if (location.hash !== hash) history.pushState({view:v}, '', hash);
   try { window.scrollTo({top:0, behavior:'smooth'}); } catch(_) {}
 
-  // footer + padding guards
+  // footer + body padding
   const slim = v !== 'home';
-  if (footer) footer.classList.toggle('slim', slim);
+  footer?.classList.toggle('slim', slim);
   try{
     document.documentElement.style.setProperty('--footer-h', slim ? '24px' : '36px');
     const fh = getComputedStyle(document.documentElement).getPropertyValue('--footer-h').trim();
@@ -38,7 +36,7 @@ function setActive(view){
   // Page-specific loaders
   try{
     if (v === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
-    if (v === 'top-performers') setTimeout(() => loadTopPerformers(false), 0);
+    if (v === 'top-performers')   setTimeout(() => loadTopPerformers(false), 0);
 
     // Link sections (Apps Script tabs)
     if (v === 'po-spreadsheets')   loadLinksGridFromTab('grid-po-spreadsheets',   'PO Spreadsheets');
@@ -48,7 +46,7 @@ function setActive(view){
     if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites');
     if (v === 'tracker')           loadLinksGridFromTab('grid-tracker',           'Trackers');
 
-    if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS); // still manual unless you add a sheet
+    if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS); // manual unless you add a sheet
   }catch(err){
     console.error('[setActive] loader error:', err);
   }
@@ -145,7 +143,7 @@ function buildContactsTable(headers, rows){
     });
 
     table.append(thead,tbody);
-    wrap.innerHTML=""; wrap.appendChild(table);
+    if (wrap){ wrap.innerHTML=""; wrap.appendChild(table); }
   }
 
   const supplierIdx = col.supplier ?? -1;
@@ -153,13 +151,13 @@ function buildContactsTable(headers, rows){
     const row = Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h));
     return (row[supplierIdx]||'').toString().trim();
   }).filter(Boolean))).sort();
-  sel.innerHTML = '<option value="">All</option>' + suppliers.map(s=>`<option value="${s}">${s}</option>`).join('');
+  if (sel) sel.innerHTML = '<option value="">All</option>' + suppliers.map(s=>`<option value="${s}">${s}</option>`).join('');
 
   mount(rows);
 
   function applyFilters(){
-    const supplierVal = sel.value.trim().toLowerCase();
-    const q = (searchEl.value||'').trim().toLowerCase();
+    const supplierVal = (sel?.value || '').trim().toLowerCase();
+    const q = (searchEl?.value || '').trim().toLowerCase();
     const filtered = rows.filter(r=>{
       const row = Array.isArray(r) ? r : headers.map(h => valueFromObj(r,h));
       const sup = supplierIdx!==-1 ? (row[supplierIdx]||'').toString().toLowerCase() : '';
@@ -170,16 +168,16 @@ function buildContactsTable(headers, rows){
     });
     mount(filtered);
   }
-  sel.onchange = applyFilters;
-  searchEl.oninput = applyFilters;
+  if (sel) sel.onchange = applyFilters;
+  if (searchEl) searchEl.oninput = applyFilters;
 }
 
 async function loadSupplierContacts(){
   const statusEl = document.getElementById('contactsStatus');
   const errEl = document.getElementById('contactsError');
   try{
-    statusEl.textContent = 'Loading…';
-    errEl.style.display = 'none';
+    if (statusEl) statusEl.textContent = 'Loading…';
+    if (errEl) errEl.style.display = 'none';
 
     const url = SUPPLIER_API + '?sheet=' + encodeURIComponent('Supplier Contacts');
     const res = await fetch(url, { cache:'no-store' });
@@ -188,19 +186,19 @@ async function loadSupplierContacts(){
     if (raw && raw.error) throw new Error(raw.error);
 
     const { headers, rows } = normalizeToHeadersRows(raw);
-    if (!Array.isArray(headers) || !Array.isArray(rows)) throw new Error('Unexpected API shape');
-
     buildContactsTable(headers, rows);
-    statusEl.textContent = `${rows.length} contacts loaded`;
+    if (statusEl) statusEl.textContent = `${rows.length} contacts loaded`;
   }catch(err){
     console.error(err);
-    statusEl.textContent = 'Failed to load contacts';
-    errEl.textContent = 'Error: ' + err.message + ' — confirm the Web App is deployed (Anyone with the link) and the tab is exactly “Supplier Contacts”.';
-    errEl.style.display = 'block';
+    if (statusEl) statusEl.textContent = 'Failed to load contacts';
+    if (errEl){
+      errEl.textContent = 'Error: ' + err.message + ' — confirm the Web App is deployed (Anyone with the link) and the tab is exactly “Supplier Contacts”.';
+      errEl.style.display = 'block';
+    }
   }
 }
 
-/* ========= Top Performers — FASTER IMAGES ========= */
+/* ========= Top Performers ========= */
 const PHOTO_BASES = [
   "https://cdn.jsdelivr.net/gh/KP360-PO/KPP@a0d4bb8d6909b10d25c517c65568568e4d37580b/path/to/photos/",
   "https://raw.githubusercontent.com/KP360-PO/KPP/a0d4bb8d6909b10d25c517c65568568e4d37580b/path/to/photos/",
@@ -254,10 +252,8 @@ function renderTPCard(p, idx=0){
   div.className = 'tp-card';
   const img = document.createElement('img');
   img.alt = p.name || 'Photo';
-  img.width = 110;
-  img.height = 110;
-  img.loading = 'lazy';
-  img.decoding = 'async';
+  img.width = 110; img.height = 110;
+  img.loading = 'lazy'; img.decoding = 'async';
   img.className = 'img-loading';
   img.src = tinyPlaceholder(p.name);
   img.dataset.file = p.photoFile || '';
@@ -302,7 +298,7 @@ function openTPModalSkeleton(){
 function fillTPModal(list, monthLabel){
   const overlay = document.querySelector('.tp-overlay'); if (!overlay) return;
   const body = overlay.querySelector('.tp-body');
-  const skeleton = body.querySelector('.tp-skeleton'); if (skeleton) skeleton.remove();
+  body.querySelector('.tp-skeleton')?.remove();
   const grid = body.querySelector('.tp-grid'); grid.style.display='grid'; grid.innerHTML='';
   overlay.querySelector('.tp-head strong').textContent = `🎉 Top Performers — ${monthLabel || 'Top Performers'}`;
   if (!list || !list.length){ const empty=document.createElement('div'); empty.textContent='No rows in Top Performer sheet.'; empty.style.cssText='color:var(--ink-2)'; grid.appendChild(empty); return; }
@@ -359,7 +355,6 @@ const SUPPLIER_WEBSITES = [];
 const SOP_LINKS         = [];
 const TRACKERS          = [];
 
-// registry so search sees items after prefetch
 const TAB_REGISTRY = {
   'PO Spreadsheets'  : PO_SPREADSHEETS,
   'PO Tools'         : PO_TOOLS,
@@ -368,18 +363,6 @@ const TAB_REGISTRY = {
   'Supplier Websites': SUPPLIER_WEBSITES,
   'Trackers'         : TRACKERS,
 };
-
-function buildLinkGrid(container, items){
-  container.innerHTML = '';
-  if (!items || !items.length){
-    const empty = document.createElement('div');
-    empty.className = 'error';
-    empty.textContent = 'No links found.';
-    container.appendChild(empty);
-    return;
-  }
-  items.forEach(it => container.appendChild(linkCard(it)));
-}
 
 function linkCard({name, url, note}){
   const a = document.createElement('a');
@@ -406,33 +389,40 @@ function linkCard({name, url, note}){
   `;
   return a;
 }
-/* === Section renderer with built-in search === */
+
+/* === Section renderer with built-in search that aligns with H2 === */
 function renderLinksSection(container, items) {
-  // Grab the section's title text (if there is an <h2> in the same section)
   const section = container.closest('.page, .content') || document;
-  const titleEl = section.querySelector('h2');
-  const titleText = titleEl ? titleEl.textContent.trim() : "";
+  const h2 = section ? section.querySelector(':scope > h2') : null;
 
-  // Build header + search bar + links grid
-  container.innerHTML = `
-    <div class="section-header">
-      ${titleText ? `<h2>${titleText}</h2>` : ""}
-      <div class="links-tools">
-        <input type="search" class="links-filter" placeholder="Search links or hint words…" />
-        <span class="links-count"></span>
-      </div>
-    </div>
-    <div class="links-grid"></div>
-  `;
+  const header = document.createElement('div');
+  header.className = 'section-header';
 
-  const input = container.querySelector('.links-filter');
-  const count = container.querySelector('.links-count');
-  const grid = container.querySelector('.links-grid');
+  if (h2 && h2.parentElement !== header) header.appendChild(h2);
 
-  // Helper to render links
-  function paint(list) {
+  const tools = document.createElement('div');
+  tools.className = 'links-tools';
+
+  const input = document.createElement('input');
+  input.type = 'search';
+  input.className = 'links-filter';
+  input.placeholder = 'Search links or hint words…';
+
+  const count = document.createElement('span');
+  count.className = 'links-count';
+
+  tools.append(input, count);
+  header.appendChild(tools);
+
+  const grid = document.createElement('div');
+  grid.className = 'links-grid';
+
+  container.innerHTML = '';
+  container.append(header, grid);
+
+  function paint(list){
     grid.innerHTML = '';
-    if (!list.length) {
+    if (!list || !list.length){
       const empty = document.createElement('div');
       empty.className = 'error';
       empty.textContent = 'No links found.';
@@ -440,19 +430,14 @@ function renderLinksSection(container, items) {
     } else {
       list.forEach(it => grid.appendChild(linkCard(it)));
     }
-    count.textContent = `${list.length} link${list.length === 1 ? '' : 's'}`;
+    count.textContent = `${(list||[]).length} link${(list||[]).length===1?'':'s'}`;
   }
 
-  // Initial render
   paint(items || []);
 
-  // Filter on input
-  input.addEventListener('input', () => {
+  input.addEventListener('input', ()=>{
     const q = (input.value || '').trim().toLowerCase();
-    if (!q) {
-      paint(items);
-      return;
-    }
+    if (!q) return paint(items);
     const filtered = (items || []).filter(it => (it.haystack || '').includes(q));
     paint(filtered);
   });
@@ -474,14 +459,14 @@ async function loadLinksGridFromTab(containerId, tabName){
     const items = rowsToLinkItems(headers, rows);
     const bucket = TAB_REGISTRY[tabName];
     if (bucket) bucket.splice(0, bucket.length, ...items); // keep search data fresh
-    renderLinksSection(container, items); // new search-enabled renderer
+    renderLinksSection(container, items);
   }catch(err){
     console.error('Links grid load error:', err);
     container.innerHTML = `<div class="error">Failed to load “${tabName}”: ${err.message}</div>`;
   }
 }
 
-/* ========= SEARCH ========= */
+/* ========= Global SEARCH (Home) ========= */
 const CATALOG = [
   { page:'po-projects',   title:'PO Projects',   keywords:['projects','po','portal','docs','kpp'], items: ()=>[] },
   { page:'supplier-contacts', title:'Supplier Contacts', keywords:['contacts','vendors','phone','email','supplier'], items: ()=>[] },
@@ -492,7 +477,7 @@ const CATALOG = [
   { page:'top-performers', title:'Top Performers', keywords:['awards','recognition','employees'], items: ()=>[] },
   { page:'tracker',        title:'Tracker', keywords:['status','metrics','tracking'], items: ()=> TRACKERS },
 
-  // now live from Apps Script
+  // live from Apps Script
   { page:'po-spreadsheets',   title:'PO Spreadsheets',   keywords:['sheets','spreadsheets','gdrive','excel'], items: ()=> PO_SPREADSHEETS },
   { page:'po-tools',          title:'PO Tools',          keywords:['tools','utility','automation','dashboard'], items: ()=> PO_TOOLS },
   { page:'marketplaces',      title:'Marketplaces',      keywords:['amazon','ebay','walmart','marketplace','seller'], items: ()=> MARKETPLACES },
@@ -627,20 +612,11 @@ function renderResults(list, q){
   resultsEl.classList.add('visible');
 }
 
-/* ========= Global events ========= */
-// SPA navigation only
-document.addEventListener('click', (e)=>{
-  const link = e.target.closest('[data-view]');
-  if (!link) return;
-  e.preventDefault();
-  setActive(link.getAttribute('data-view'));
-});
-
-window.addEventListener('popstate', e=>{
-  const v = (e.state && e.state.view) || (location.hash || '#home').replace('#','');
-  setActive(v);
-});
-document.querySelector('.brand')?.addEventListener('click', ()=> setActive('home'));
+function wireGlobalSearch(){
+  if (!domReadyForSearch()) return;
+  searchBtn?.addEventListener('click', doSearch);
+  searchInput?.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') doSearch(); });
+}
 
 /* ===== Initial triggers ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -650,6 +626,8 @@ document.addEventListener('DOMContentLoaded', () => {
   else { loadTopPerformers(false); }
 
   setActive(initial);
+
+  wireGlobalSearch();
 
   // Prefetch tabs so search is ready quickly
   const TABS_TO_PREFETCH = Object.keys(TAB_REGISTRY);
@@ -665,11 +643,23 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 
   if (initial === 'supplier-contacts') setTimeout(loadSupplierContacts, 0);
-
   console.log('[Portal] init OK — search ready:', !!document.getElementById('globalSearch'));
 });
 
-// Fetch a {headers, rows} payload from Apps Script for a given tab
+/* ========= SPA nav ========= */
+document.addEventListener('click', (e)=>{
+  const link = e.target.closest('[data-view]');
+  if (!link) return;
+  e.preventDefault();
+  setActive(link.getAttribute('data-view'));
+});
+window.addEventListener('popstate', e=>{
+  const v = (e.state && e.state.view) || (location.hash || '#home').replace('#','');
+  setActive(v);
+});
+document.querySelector('.brand')?.addEventListener('click', ()=> setActive('home'));
+
+/* ========= Data helpers ========= */
 async function fetchSheetRows(tabName){
   const url = SUPPLIER_API + "?sheet=" + encodeURIComponent(tabName);
   const res = await fetch(url, { cache: "no-store" });
@@ -701,33 +691,34 @@ function rowsToLinkItems(headers, rows){
     .filter(it => it.name && it.url);
 }
 
-// (no duplicate loadLinksGridFromTab definition)
-
+/* ========= Passcode Gate (per-tab session) ========= */
 const CORRECT_PASSCODE = "po360"; // change to your passcode
 
 function checkPasscode() {
-  const input = document.getElementById("passInput").value.trim();
+  const inputEl = document.getElementById("passInput");
+  const lock = document.getElementById("lockScreen");
   const error = document.getElementById("errorMsg");
+  if (!inputEl || !lock) return;
 
+  const input = inputEl.value.trim();
   if (input === CORRECT_PASSCODE) {
-    document.getElementById("lockScreen").style.opacity = "0";
-    setTimeout(() => {
-      document.getElementById("lockScreen").style.display = "none";
-    }, 300);
-    sessionStorage.setItem("siteUnlocked", "true"); // ✅ only for this tab session
+    lock.style.opacity = "0";
+    setTimeout(() => { lock.style.display = "none"; }, 300);
+    sessionStorage.setItem("siteUnlocked", "true"); // only for this tab
   } else {
-    error.style.display = "block";
+    if (error) error.style.display = "block";
   }
 }
 
-// Auto-unlock if already unlocked in current session
-if (sessionStorage.getItem("siteUnlocked") === "true") {
-  document.getElementById("lockScreen").style.display = "none";
-}
+(function initPasscode(){
+  const lock = document.getElementById("lockScreen");
+  const input = document.getElementById("passInput");
+  if (!lock) return; // if you didn't include the lock HTML, skip
 
-// Allow pressing Enter to submit
-document.getElementById("passInput").addEventListener("keyup", function(e) {
-  if (e.key === "Enter") {
-    checkPasscode();
+  if (sessionStorage.getItem("siteUnlocked") === "true") {
+    lock.style.display = "none";
   }
-});
+  input?.addEventListener("keyup", (e)=>{ if (e.key === "Enter") checkPasscode(); });
+  // optional: if you want to lock again when a tab becomes visible after being hidden for long
+  // document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState==='hidden') sessionStorage.removeItem('siteUnlocked'); });
+})();
