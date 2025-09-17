@@ -46,6 +46,8 @@ function setActive(view){
     if (v === 'marketplaces')      loadLinksGridFromTab('grid-marketplaces',      'Marketplaces');
     if (v === 'mailboxes')         loadLinksGridFromTab('grid-mailboxes',         'Mailboxes');
     if (v === 'supplier-websites') loadLinksGridFromTab('grid-supplier-websites', 'Supplier Websites');
+    if (v === 'tracker') loadLinksGridFromTab('grid-tracker', 'Trackers');  // <-- add
+
 
     if (v === 'sops') ensureLinkGrid('grid-sops', SOP_LINKS); // still manual unless you add a sheet
   }catch(err){
@@ -358,7 +360,7 @@ const MARKETPLACES      = [];
 const MAILBOXES         = [];
 const SUPPLIER_WEBSITES = [];
 const SOP_LINKS         = [];
-
+const TRACKERS = [];
 // registry so search sees items after prefetch
 const TAB_REGISTRY = {
   'PO Spreadsheets'  : PO_SPREADSHEETS,
@@ -366,6 +368,7 @@ const TAB_REGISTRY = {
   'Marketplaces'     : MARKETPLACES,
   'Mailboxes'        : MAILBOXES,
   'Supplier Websites': SUPPLIER_WEBSITES,
+  'Trackers': TRACKERS,
 };
 
 async function fetchSheet(sheetName){
@@ -448,9 +451,9 @@ const CATALOG = [
   { page:'email-templates', title:'Email Templates', keywords:['templates','email','reply','canned responses'], items: ()=>[] },
   { page:'schedule',       title:'Schedule',     keywords:['calendar','roster','shift'], items: ()=>[] },
   { page:'task-monitoring',title:'Task Monitoring', keywords:['tasks','tracker','kanban','status'], items: ()=>[] },
-  { page:'tracker',        title:'Tracker',      keywords:['status','metrics','tracking'], items: ()=>[] },
   { page:'marketplace-performance', title:'Marketplace Performance', keywords:['kpi','revenue','conversion','marketplace','performance'], items: ()=>[] },
   { page:'top-performers', title:'Top Performers', keywords:['awards','recognition','employees'], items: ()=>[] },
+  { page:'tracker', title:'Tracker', keywords:['status','metrics','tracking'], items: ()=> TRACKERS },
 
   // now live from Apps Script
   { page:'po-spreadsheets',   title:'PO Spreadsheets',   keywords:['sheets','spreadsheets','gdrive','excel'], items: ()=> PO_SPREADSHEETS },
