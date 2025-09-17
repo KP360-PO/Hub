@@ -498,3 +498,14 @@ body.dark{
 body:not(.dark) .res-item:hover { filter: brightness(0.98); }
 /* Optional: very subtle hover in dark mode */
 body.dark .res-item:hover { background: #1b2436 !important; }
+body.dark #lockScreen {
+  background: var(--bg, #111827);
+}
+body.dark #lockScreen div {
+  background: var(--card, #1f2937);
+}
+body.dark #passInput {
+  background: #111827;
+  color: #f9fafb;
+  border-color: #374151;
+}
