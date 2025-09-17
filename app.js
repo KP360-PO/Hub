@@ -693,7 +693,7 @@ function rowsToLinkItems(headers, rows){
 
 // (no duplicate loadLinksGridFromTab definition)
 
-const CORRECT_PASSCODE = "PO360"; // change this to your passcode
+const CORRECT_PASSCODE = "po360"; // change to your passcode
 
 function checkPasscode() {
   const input = document.getElementById("passInput").value.trim();
@@ -704,13 +704,20 @@ function checkPasscode() {
     setTimeout(() => {
       document.getElementById("lockScreen").style.display = "none";
     }, 300);
-    localStorage.setItem("siteUnlocked", "true");
+    sessionStorage.setItem("siteUnlocked", "true"); // ✅ only for this tab session
   } else {
     error.style.display = "block";
   }
 }
 
-// Auto-unlock if already unlocked
-if (localStorage.getItem("siteUnlocked") === "true") {
+// Auto-unlock if already unlocked in current session
+if (sessionStorage.getItem("siteUnlocked") === "true") {
   document.getElementById("lockScreen").style.display = "none";
 }
+
+// Allow pressing Enter to submit
+document.getElementById("passInput").addEventListener("keyup", function(e) {
+  if (e.key === "Enter") {
+    checkPasscode();
+  }
+});
