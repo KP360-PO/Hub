@@ -1,0 +1,212 @@
+[
+  {
+    "q": "How do you check BO for EAGLE?",
+    "a": [
+      "Go to the EAGLE website ➜ Order Status; if marked OOS after PO, it appears in Tracking Info/Remark.",
+      "Ask the supplier by phone only.",
+      "Wait for warehouse to report it.",
+      "Check Marketplace messages for auto-cancellations."
+    ],
+    "c": 0
+  },
+  {
+    "q": "How do you check BO for TYC?",
+    "a": [
+      "Go to Purchase mailbox (iStore SO# email) and compare ordered vs allocated QTY, or check PO-TYC ➜ backordered folder.",
+      "Open the Vendor Slack and search for BO.",
+      "Use Google Voice call logs.",
+      "Check WooHub announcements."
+    ],
+    "c": 0
+  },
+  {
+    "q": "What is an NSF SKU?",
+    "a": [
+      "A SKU no longer sold by the supplier, fulfilled with an alternate SKU.",
+      "A newly launched supplier SKU.",
+      "A SKU that is always shipped LTL.",
+      "A SKU with free freight from supplier."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Which of the following is a valid example of an NSF SKU?",
+    "a": ["323-2003L-UF", "PLX-2003-UF", "KAR-NSF-2003", "EAG-2003L"],
+    "c": 0
+  },
+  {
+    "q": "Where do you check daily feed inventory from suppliers?",
+    "a": [
+      "Purchase Mailbox ➜ Daily Inv Update",
+      "Warehouse whiteboard",
+      "Google Drive ➜ Random Notes",
+      "Slack #general"
+    ],
+    "c": 0
+  },
+  {
+    "q": "How do you cancel a USAuto order that already has a quote ID?",
+    "a": [
+      "Email Team Kool Vue East via the purchase mailbox with the PO Number and Order ID.",
+      "Delete the PO from the spreadsheet.",
+      "Open a carrier claim with FedEx.",
+      "Message the buyer to cancel directly in Marketplace."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Who are our current wholesale customers?",
+    "a": ["KEMA and AAG", "Kema and WooParts", "AAG and Artotek", "KSI and Alpharex"],
+    "c": 0
+  },
+  {
+    "q": "What do we call shipments used for large items (hoods, bumpers, large grilles)?",
+    "a": ["LTL", "Parcel Priority", "AMZL", "Express Saver"],
+    "c": 0
+  },
+  {
+    "q": "What is the component SKU of CLX-M1-322-2027L-AG-CL360A3?",
+    "a": ["322-2027L-AG", "323-2027L-AG", "CLX-2027L-AG", "M1-2027L-AG"],
+    "c": 0
+  },
+  {
+    "q": "How do you recognize a set SKU?",
+    "a": [
+      "CLX denotes set SKUs; order 1 SKU and receive both sides.",
+      "PLX denotes set SKUs; you always order two supplier SKUs.",
+      "Any SKU with “M1” is automatically a set.",
+      "Any SKU containing a hyphen is a set."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Golden SKU vs Component SKU — which statement is correct?",
+    "a": [
+      "Golden SKUs are the marketplace SKUs; Component SKUs are the supplier-ordered SKUs.",
+      "Golden SKUs are supplier SKUs; Component SKUs are marketplace SKUs.",
+      "Both are the same; names vary by team.",
+      "Golden SKUs only apply to LTL items."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Why do we send a JWL for an OOS Amazon order?",
+    "a": [
+      "To avoid removal when there’s a same-SKU cancellation within 30 days.",
+      "To upgrade orders to expedited shipping.",
+      "To request partial shipment from supplier.",
+      "To bypass marketplace metrics entirely."
+    ],
+    "c": 0
+  },
+  {
+    "q": "What’s the purpose of JWL on eBay?",
+    "a": [
+      "Reduce cancellations and late shipments when an item is OOS.",
+      "Enable automatic returns approval.",
+      "Request tax exemption.",
+      "Submit carrier claims."
+    ],
+    "c": 0
+  },
+  {
+    "q": "When someone provides only a SKU and asks for order details, where do you look first?",
+    "a": [
+      "NJ PO spreadsheet (use Find across Workbook for the SKU) to get PO name, order #, customer and address.",
+      "Google Voice history.",
+      "Carrier website tracking search.",
+      "Warehouse bin logs."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Give an example of a shipping restriction with USAuto.",
+    "a": ["PO Box addresses", "Oversized cartons", "Residential addresses", "Saturday delivery"],
+    "c": 0
+  },
+  {
+    "q": "Usauto order has a PO Box address. What’s the correct approach?",
+    "a": [
+      "Verify in CA/MP; if a physical address exists validate in SS and update; otherwise email buyer for a physical address and cancel/refund if none.",
+      "Ship anyway via FedEx.",
+      "Change to AMZL automatically.",
+      "Ask warehouse to rebox and ship UPS."
+    ],
+    "c": 0
+  },
+  {
+    "q": "How do we submit orders from Alpharex and KSource?",
+    "a": ["Via Email", "Via EDI only", "Through Slack forms", "Via SMS"],
+    "c": 0
+  },
+  {
+    "q": "Which carriers are NOT allowed for KEMA orders?",
+    "a": ["AMZL, UPS, OnTrac", "FedEx, USPS, DHL", "USPS only", "Any carrier is fine"],
+    "c": 0
+  },
+  {
+    "q": "What are the PO cut-off times (morning and afternoon)?",
+    "a": ["8 AM and 3 PM", "7 AM and 2 PM", "9 AM and 4 PM", "10 AM and 5 PM"],
+    "c": 0
+  },
+  {
+    "q": "A warehouse says a returned item arrived. What should you do?",
+    "a": [
+      "Search tracking in SS/CA, get the order #, review MP/3D conversations for reason, inform WH and ask to stock if appropriate.",
+      "Create a return label and resend.",
+      "Refund immediately without checking.",
+      "Ask carrier to destroy the item."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Can we cancel an Amazon order if the item is OOS?",
+    "a": [
+      "Yes, provided there’s no cancellation of the exact same SKU within 30 days and it’s OOS everywhere.",
+      "Yes, always allowed with no conditions.",
+      "No, Amazon orders can’t be cancelled.",
+      "Only if the buyer opens a case."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Proper uses of Google Voice for the team include…",
+    "a": [
+      "Contacting suppliers, verifying customer info, and addressing carrier calls when needed.",
+      "Internal chit-chat only.",
+      "Uploading tracking numbers to MP.",
+      "Submitting purchase orders to suppliers."
+    ],
+    "c": 0
+  },
+  {
+    "q": "You see an ARTOTEK order in ZM. What should you do?",
+    "a": [
+      "Check if it’s in-house; if not, cross-fulfill to Big 3/other suppliers (we no longer order from Artotek).",
+      "Proceed to order from Artotek as usual.",
+      "Cancel immediately without checking.",
+      "Wait for buyer instructions."
+    ],
+    "c": 0
+  },
+  {
+    "q": "WC order (not USAuto) has a PO BOX and only FedEx meets EDD/cost. What’s the process?",
+    "a": [
+      "Verify address in CA/MP, check DIM and NPM, contact buyer for a physical address.",
+      "Ship FedEx anyway; PO Boxes are fine.",
+      "Switch to USPS automatically.",
+      "Ask warehouse to deliver by hand."
+    ],
+    "c": 0
+  },
+  {
+    "q": "Buyer later provides a physical address for that order. What’s next?",
+    "a": [
+      "Validate the address in SS and proceed with labeling as usual.",
+      "Ask the buyer to reorder.",
+      "Refund the order anyway.",
+      "Move it to LTL."
+    ],
+    "c": 0
+  }
+]
