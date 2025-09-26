@@ -1,964 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KP360 · PO Hub</title>
-  <link rel="icon" href="https://www.karparts360.com/images/simplecms/favicon.ico" type="image/x-icon">
-  <meta name="color-scheme" content="light dark" />
-
-  <!-- Perf hints -->
-  <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
-  <link rel="preconnect" href="https://script.google.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-
-  <!-- Assets (cache-busted) -->
-  
-<!-- Inlined from styles.css -->
-<style>
-/* =======================
-   KP360 Operations Portal
-   Global Styles (Light & Dark)
-   ======================= */
-
-/* ---------- Theme tokens ---------- */
-:root{
-  --brand:#1f2937; --brand-600:#111827;
-
-  --ink:#0f172a;           /* primary text */
-  --ink-2:#4b5563;         /* secondary text */
-  --bg:#f6f7fb;
-  --card:#ffffff;
-  --border:#e5e7eb;
-  --muted:#6b7280;
-
-  --ring-steel-from:#e9eef7;
-  --ring-steel-to:#cfd8e6;
-
-  --header-h:64px;         /* header height for sticky math */
-  --footer-h:36px;
-
-  /* Search results palette */
-  --res-bg: var(--card);
-  --res-title:#111827;
-  --res-sub:#475569;
-  --res-url:#374151;
-  --res-row:#ffffff;
-  --res-row-hover:#f3f4f6;
-  --res-open-bg:#f8fafc;
-}
-
-/* Dark mode tokens */
-body.dark{
-  --brand:#60a5fa; --brand-600:#3b82f6;
-
-  --ink:#e5e7eb;
-  --ink-2:#9ca3af;
-  --bg:#0f172a;
-  --card:#1e293b;
-  --border:#334155;
-  --muted:#94a3b8;
-
-  --ring-steel-from:#334155;
-  --ring-steel-to:#475569;
-
-  /* Search results palette (dark) */
-  --res-bg:#141c2b;
-  --res-title:#e5e7eb;
-  --res-sub:#b0bccb;
-  --res-url:#c3ccd8;
-  --res-row:#1e293b;
-  --res-row-hover:rgba(255,255,255,.09);
-  --res-open-bg:#0f172a;
-}
-
-/* ---------- Base ---------- */
-*{ box-sizing:border-box }
-html,body{ height:100% }
-body{
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  margin:0;
-  line-height:1.6;
-  background:var(--bg);
-  color:var(--ink);
-  padding-bottom:var(--footer-h);
-  transition: background .25s ease, color .25s ease;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
-a{ color:inherit; text-decoration:none }
-.container{ width:min(1400px,96%); margin-inline:auto }
-
-
-.page.container:not([data-page="home"]){ width:min(2180px,99%); }
-/* ---------- Header ---------- */
-.site-header{
-  position:sticky; top:0; z-index:60;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:saturate(1.15) blur(8px);
-  border-bottom:1px solid var(--border);
-  height:var(--header-h);
-  transition: background .25s;
-}
-body.dark .site-header{ background:rgba(15,23,42,.9) }
-.header-inner{
-  display:flex; align-items:center; gap:.6rem;
-  min-height:var(--header-h); padding:.2rem .4rem;
-}
-.brand{ display:flex; align-items:center; gap:.5rem; cursor:pointer }
-.brand img{ height:22px; display:block }
-.brand strong{ font-size:.9rem }
-.primary-nav{ margin-left:auto; display:flex; align-items:center; gap:.6rem }
-.primary-nav ul{ list-style:none; display:flex; gap:.6rem; margin:0; padding:0 }
-.primary-nav a{
-  color:var(--ink-2); font-weight:600; font-size:.85rem;
-  padding:.25rem .45rem; border-radius:.4rem;
-  transition: background .2s, color .2s;
-}
-.primary-nav a:hover{ color:var(--ink); background:rgba(0,0,0,.05) }
-body.dark .primary-nav a:hover{ background:rgba(255,255,255,.06) }
-.icon-btn{
-  border:1px solid var(--border); background:var(--card); color:var(--ink);
-  width:32px; height:32px; display:grid; place-items:center; border-radius:.45rem;
-  cursor:pointer; padding:0; line-height:0;
-  transition: background .2s, border-color .2s, filter .2s;
-}
-.icon-btn svg{ width:18px; height:18px; stroke:currentColor; display:block }
-.icon-btn:hover{ filter:brightness(.98) }
-
-/* ---------- Hero + Search ---------- */
-.hero{
-  background:linear-gradient(180deg,var(--brand),var(--brand-600));
-  color:#fff; padding:1.2rem 0; transition: background .25s;
-}
-body.dark .hero{ background:linear-gradient(180deg,#1e40af 0%, #1e293b 100%) }
-.hero h1{ margin:0 0 .25rem; font-size:1.5rem }
-.hero p{ margin:.1rem 0 .8rem; opacity:.95 }
-
-.search{
-  position:relative; display:flex; max-width:620px;
-  background:#fff; border-radius:.6rem; overflow:visible;
-  box-shadow:0 10px 24px rgba(0,0,0,.15);
-}
-.search input{
-  flex:1; border:0; padding:.6rem .75rem; font-size:.95rem; color:#111; background:transparent;
-}
-.search button{
-  background:var(--brand); color:#fff; border:0; padding:.6rem .9rem; font-weight:700; border-radius:0 .6rem .6rem 0;
-}
-body.dark .search{ background:#0b1220; box-shadow:0 0 0 1px var(--border) }
-body.dark .search input{ color:var(--ink) }
-
-/* ---------- Categories ---------- */
-categories, .categories{
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(clamp(160px,22vw,260px),1fr));
-  gap:clamp(.6rem,1.5vw,1.2rem); margin:1.4rem 0 1.6rem
-}
-.category{
-  background:var(--card); border:1px solid var(--border); border-radius:1rem;
-  padding:clamp(.75rem,1.4vw,1.1rem); text-align:center;
-  box-shadow:0 1px 10px rgba(0,0,0,.05);
-  transition: transform .15s ease, box-shadow .15s ease, background .25s, border-color .25s;
-}
-.category:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.08) }
-.icon{
-  position:relative; width:clamp(66px,10vw,86px); height:clamp(66px,10vw,86px); margin:auto; border-radius:50%;
-  display:grid; place-items:center;
-  background:radial-gradient(closest-side,#fff 64%,transparent 66%), conic-gradient(var(--ring-steel-from),var(--ring-steel-to));
-  box-shadow:0 8px 18px rgba(0,0,0,.06), inset 0 0 0 1px rgba(255,255,255,.8)
-}
-.icon svg{ width:clamp(30px,5vw,40px); height:clamp(30px,5vw,40px) }
-body.dark .icon svg{ color:var(--brand) }
-.category .title{ display:block; margin-top:.65rem; font-weight:700; font-size:clamp(.9rem,1.2vw,1rem) }
-
-/* ---------- Content / Iframes ---------- */
-.content{
-  background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1rem; margin-bottom:1rem;
-  box-shadow:0 1px 6px rgba(0,0,0,.04); transition: background .25s, border-color .25s;
-}
-.iframe-wrap{ border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--card) }
-.iframe-wrap iframe{ width:100%; height:calc(100vh - var(--header-h) - var(--footer-h)); border:0; display:block }
-
-/* ---------- Router visibility ---------- */
-.page{ display:none }
-.page.active{ display:block }
-
-/* ---------- Footer ---------- */
-footer{
-  position:fixed; bottom:0; left:0; right:0; text-align:center;
-  padding:.35rem 0; color:var(--muted);
-  border-top:1px solid var(--border); font-size:.72rem; background:#f9fafb; z-index:70;
-  transition: background .25s, color .25s, border-color .25s;
-}
-footer.slim{ padding:.25rem 0; font-size:.68rem; opacity:.9 }
-body.dark footer{ background:#0b1220 }
-
-/* ---------- Supplier Contacts ---------- */
-.contacts-controls{
-  display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.6rem
-}
-.contacts-controls input,.contacts-controls select{
-  padding:.5rem .6rem; border:1px solid var(--border); border-radius:.5rem; background:var(--card); color:var(--ink)
-}
-.contacts-controls input{ min-width:220px }
-.contacts-status{ font-size:.85rem; color:var(--ink-2) }
-
-.contacts-table{
-  width:100%; border-collapse:collapse; background:var(--card);
-  border:1px solid var(--border); border-radius:10px; overflow:hidden
-}
-.contacts-table th,.contacts-table td{
-  padding:.6rem .7rem; border-bottom:1px solid var(--border);
-  text-align:left; font-size:.92rem; vertical-align:top
-}
-.contacts-table th{
-  background:linear-gradient(180deg, #f8fafc, #f1f5f9); font-weight:700
-}
-body.dark .contacts-table th{ background:linear-gradient(180deg, #0b1220, #111827) }
-
-.error{
-  background:#fff3f3; border:1px solid #fca5a5; color:#991b1b;
-  padding:.6rem .8rem; border-radius:.5rem
-}
-
-/* ---------- Top performers ---------- */
-#tp-page-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px }
-.tp-card{
-  background:var(--card); border:1px solid var(--border); border-radius:12px;
-  padding:10px; text-align:center
-}
-.tp-card img{
-  width:110px; height:110px; border-radius:50%; object-fit:cover;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
-  transition: filter .25s ease, opacity .2s;
-}
-.tp-card img.img-loading{ filter:blur(8px); opacity:.7 }
-.tp-card .name{ font-weight:700; margin-top:.4rem }
-
-/* Modal */
-.tp-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:1000 }
-.tp-modal{
-  width:min(900px,92%); background:var(--card); color:var(--ink);
-  border:1px solid var(--border); border-radius:16px;
-  box-shadow:0 20px 50px rgba(0,0,0,.3); overflow:hidden
-}
-.tp-head{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:12px 14px; background:linear-gradient(180deg,var(--brand),var(--brand-600)); color:#fff
-}
-.tp-close{
-  border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff;
-  padding:.35rem .6rem; border-radius:8px; cursor:pointer
-}
-.tp-body{ padding:14px }
-.tp-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px }
-.tp-skeleton{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px }
-.tp-skeleton .cell{
-  height:160px; border-radius:12px;
-  background:linear-gradient(90deg,#eee,#f5f5f5,#eee);
-  background-size:200% 100%; animation:shine 1.1s linear infinite
-}
-@keyframes shine{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-/* ---------- Link grids (pretty cards) ---------- */
-.links-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(clamp(180px,22vw,260px),1fr));
-  gap:clamp(.6rem,1.4vw,1rem);
-}
-
-.link-card{
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  grid-template-areas:
-    "ico title open"
-    "ico note  open";
-  align-items:center;
-  gap:.65rem .75rem;
-
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:.85rem .9rem;
-  box-shadow:0 1px 10px rgba(0,0,0,.05);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .2s, background .2s;
-}
-.link-card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 10px 22px rgba(0,0,0,.10);
-}
-
-.link-card .lc-ico{
-  grid-area:ico;
-  width:42px;height:42px;border-radius:50%;
-  display:grid;place-items:center;flex:0 0 42px;
-  background:radial-gradient(closest-side,#fff 64%,transparent 66%),
-             conic-gradient(var(--ring-steel-from),var(--ring-steel-to));
-  box-shadow:0 6px 14px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.8);
-}
-body.dark .link-card .lc-ico{
-  background:radial-gradient(closest-side,#0b1220 64%,transparent 66%),
-             conic-gradient(var(--ring-steel-from),var(--ring-steel-to));
-}
-
-.link-card .lc-ico svg{ width:22px;height:22px;color:var(--brand) }
-
-.link-card .lc-title{
-  grid-area:title;
-  font-weight:700;
-  font-size:.98rem;
-  color:var(--ink);
-  line-height:1.2;
-}
-.link-card .lc-note{
-  grid-area:note;
-  font-size:.82rem;
-  color:var(--ink-2);
-  margin-top:.15rem;
-}
-
-.link-card .lc-open{
-  grid-area:open;
-  width:28px;height:28px;
-  border:1px solid var(--border);
-  border-radius:.5rem;
-  display:grid;place-items:center;
-  background:var(--res-open-bg);
-  color:var(--res-title);
-  transition: filter .15s ease, background .15s ease;
-}
-.link-card:hover .lc-open{ filter:brightness(.98) }
-.link-card .lc-open svg{ width:16px;height:16px;stroke:currentColor }
-
-/* make the whole card clickable but keep good focus outline */
-.link-card:focus-visible{ outline:2px solid var(--brand); outline-offset:2px }
-
-/* =========================
-   Search Results (dropdown)
-   ========================= */
-
-/* Container */
-.results{
-  position:absolute; top:100%; left:0; right:0; margin-top:.35rem;
-  background: var(--res-bg);
-  border: 1px solid var(--border);
-  border-radius: .6rem;
-  box-shadow: 0 14px 34px rgba(0,0,0,.28);
-  max-height:360px; overflow:auto;
-  z-index:2000;
-  display:none;
-  overflow-anchor:none;
-}
-.results.visible{ display:block; }
-
-/* Header */
-.res-header{
-  padding:.5rem .8rem;
-  font-weight:600; font-size:.85rem;
-  color: var(--res-sub);
-  background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.04));
-  border-bottom:1px solid var(--border);
-}
-body.dark .res-header{
-  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.06));
-}
-
-/* Row */
-.res-item{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:.6rem; padding:.6rem .8rem;
-  color: var(--res-title);
-  background: var(--res-row);
-  border-top:1px solid var(--border);
-  cursor:pointer;
-  transition: background .15s ease, transform .08s ease;
-}
-.res-item:first-of-type{ border-top:0 }
-.res-item:hover{ background: var(--res-row-hover); transform: translateX(1px); }
-
-/* Left block */
-.res-title-btn{
-  flex:1; display:flex; align-items:flex-start; gap:.5rem;
-  background:none; border:0; padding:0; text-align:left; color:inherit; cursor:pointer;
-}
-.res-ico{
-  width:24px; height:24px; border-radius:.4rem; display:grid; place-items:center;
-  background: linear-gradient(180deg,#f8fafc,#eef2f7);
-}
-body.dark .res-ico{ background: linear-gradient(180deg,#0b1220,#0f172a) }
-.res-title-text{ font-weight:700; color: var(--res-title) }
-.res-title-btn:hover .res-title-text{ text-decoration:underline }
-.res-sub{ font-size:.82rem; color: var(--res-sub) }
-.res-url{ color: var(--res-url); text-decoration:none; word-break:break-all }
-
-/* Right button */
-.res-open-btn{
-  background: var(--res-open-bg);
-  color: var(--res-title);
-  border: 1px solid var(--border);
-  padding:.28rem .4rem; border-radius:.45rem; line-height:0; cursor:pointer;
-  transition: filter .15s ease, background .15s ease;
-}
-.res-open-btn svg{ stroke: currentColor; width:16px; height:16px; display:block; }
-
-body.dark .res-open-btn{
-  background:#0f172a;
-  color:#e5e7eb;
-}
-.res-open-btn:hover{ filter:brightness(.98); }
-
-/* Keyboard focus */
-.res-title-btn:focus-visible,
-.res-open-btn:focus-visible{
-  outline:2px solid var(--brand);
-  outline-offset:2px; border-radius:.35rem;
-}
-
-/* Keep dropdown readable above hero gradient */
-.hero .results{
-  background: var(--res-bg);
-  border-color: var(--border);
-  color: var(--res-title);
-}
-.hero .results .res-header{ color: var(--res-sub) }
-.hero .results .res-item,
-.hero .results .res-title-text{ color: var(--res-title) }
-.hero .results .res-sub,
-.hero .results .res-url{ color: var(--res-sub) }
-
-/* High-contrast users */
-@media (prefers-contrast: more){
-  .res-item:hover{
-    background: color-mix(in srgb, var(--res-row) 80%, #000 20%);
-  }
-  body.dark .res-item:hover{
-    background: color-mix(in srgb, var(--res-row) 80%, #fff 20%);
-  }
-}
-
-/* Neutralize blue button fill in results */
-:root{
-  --res-row: #ffffff;
-  --res-title: #111827;
-  --res-sub: #475569;
-  --res-url: #374151;
-}
-body.dark{
-  --res-row: #141c2b;
-  --res-title: #ffffff;
-  --res-sub: #cbd5e1;
-  --res-url: #bac7d6;
-}
-.results { background: var(--res-bg, var(--card)); }
-.res-item,
-.res-item:hover,
-.res-item:focus,
-.res-item:focus-within { background: var(--res-row) !important; }
-.res-title-btn { background: transparent !important; appearance: none; }
-.res-title-btn:hover { background: transparent !important; }
-.res-title-text { color: var(--res-title) !important; }
-.res-sub       { color: var(--res-sub)   !important; }
-.res-url       { color: var(--res-url)   !important; }
-body:not(.dark) .res-item:hover { filter: brightness(0.98); }
-body.dark .res-item:hover { background: #1b2436 !important; }
-
-/* Passcode gate dark theming */
-body.dark #lockScreen { background: var(--bg, #111827); }
-body.dark #lockScreen div { background: var(--card, #1f2937); }
-body.dark #passInput { background: #111827; color: #f9fafb; border-color: #374151; }
-
-/* ========== Dark Mode Polish ========== */
-:root { --t-fast: .15s; --t-med: .25s; }
-
-body.dark {
-  --bg:        #0f1520;
-  --bg-2:      #111827;
-  --card:      #131b29;
-  --card-2:    #0f1623;
-  --ink:       #e6edf3;
-  --ink-2:     #9fb4c7;
-  --ink-3:     #7b8fa6;
-  --brand:     #5aa7ff;
-  --brand-2:   #2f7de8;
-  --ok:        #47d16c;
-  --warn:      #ffc857;
-  --err:       #ff6b6b;
-  --border:    rgba(255,255,255,.08);
-  --ring:      rgba(90,167,255,.45);
-  --shadow:    0 10px 30px rgba(0,0,0,.45);
-  color: var(--ink);
-  background: radial-gradient(1200px 600px at 20% -10%, #173055 0%, transparent 60%),
-              radial-gradient(1200px 600px at 100% -20%, #1b2440 0%, transparent 60%),
-              var(--bg);
-}
-
-/* Header/hero with subtle glow */
-body.dark .site-header {
-  background: linear-gradient(180deg, rgba(19,31,53,.92), rgba(19,31,53,.75));
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: saturate(120%) blur(6px);
-}
-body.dark .hero {
-  background: linear-gradient(180deg, rgba(33,55,97,.45), rgba(33,55,97,0) 70%);
-}
-
-/* Buttons */
-body.dark .icon-btn,
-body.dark .search button,
-body.dark .btn {
-  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-2) 100%);
-  color: white;
-  border: 0;
-  border-radius: .65rem;
-  box-shadow: 0 4px 14px rgba(90,167,255,.28);
-  transition: transform var(--t-fast), box-shadow var(--t-fast), filter var(--t-fast);
-}
-body.dark .icon-btn:hover,
-body.dark .search button:hover,
-body.dark .btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
-body.dark .icon-btn:active,
-body.dark .search button:active,
-body.dark .btn:active  { transform: translateY(0); }
-
-/* Inputs */
-body.dark .search input,
-body.dark input[type="search"],
-body.dark input[type="text"],
-body.dark select {
-  background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: .75rem;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-}
-body.dark .search input::placeholder,
-body.dark input::placeholder { color: var(--ink-3); }
-
-/* Focus ring */
-body.dark .search input:focus,
-body.dark .search button:focus,
-body.dark a:focus,
-body.dark button:focus,
-body.dark select:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--ring);
-}
-
-/* Category tiles */
-body.dark .categories .category {
-  background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  transition: transform var(--t-med), box-shadow var(--t-med), border-color var(--t-fast);
-}
-body.dark .categories .category:hover {
-  transform: translateY(-3px);
-  border-color: rgba(90,167,255,.25);
-  box-shadow: 0 12px 34px rgba(20,27,38,.6);
-}
-body.dark .categories .category .title { color: var(--ink); }
-body.dark .categories .category svg { color: var(--brand); opacity: .95; }
-
-/* Link cards */
-body.dark .link-card {
-  background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  transition: transform var(--t-med), border-color var(--t-fast), box-shadow var(--t-med);
-}
-body.dark .link-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(90,167,255,.25);
-  box-shadow: 0 14px 36px rgba(9,12,18,.7);
-}
-body.dark .lc-title { color: var(--ink); }
-body.dark .lc-note  { color: var(--ink-2); }
-body.dark .lc-ico svg,
-body.dark .lc-open svg { color: var(--brand); }
-
-/* Optional: sticky section tools (uncomment if you want sticky search) */
-/*
-.links-tools {
-  position: sticky;
-  top: calc(var(--header-h) + 8px);
-  z-index: 30;
-}
-@media (max-width: 900px){
-  .links-tools { position: static; }
-}
-*/
-
-/* Tables (contacts) */
-body.dark .contacts-table {
-  background: var(--card);
-  color: var(--ink);
-  border: 1px solid var(--border);
-}
-body.dark .contacts-table thead th {
-  background: rgba(255,255,255,.03);
-  color: var(--ink);
-  border-bottom: 1px solid var(--border);
-}
-body.dark .contacts-table tbody tr:hover {
-  background: rgba(90,167,255,.06);
-}
-
-/* Footer */
-body.dark #footer {
-  background: rgba(13,18,28,.85);
-  color: var(--ink-2);
-  border-top: 1px solid var(--border);
-}
-
-/* Scrollbar (WebKit) */
-body.dark *::-webkit-scrollbar{ height:10px; width:10px; }
-body.dark *::-webkit-scrollbar-track{ background: transparent; }
-body.dark *::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.12);
-  border-radius: 10px; border: 2px solid transparent; background-clip: padding-box;
-}
-body.dark *::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.18); }
-
-/* Modals (Top Performers) */
-body.dark .tp-overlay { background: rgba(5,8,13,.7); backdrop-filter: blur(2px); }
-body.dark .tp-modal {
-  background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
-  border: 1px solid var(--border); color: var(--ink); box-shadow: var(--shadow);
-}
-body.dark .tp-head { border-bottom: 1px solid var(--border); }
-
-/* ---- Section header (Title + Search inline) ---- */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.section-header h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
-
-.links-tools {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
-.links-tools input.links-filter {
-  padding: .4rem .6rem;
-  min-width: 220px;
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  background: var(--card);
-  color: var(--ink);
-}
-.links-tools .links-count {
-  font-size: 0.85rem;
-  color: var(--ink-2);
-}
-
-</style>
-</head>
-<body>
-  <!-- Passcode Gate -->
-  <div id="lockScreen" style="
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:var(--bg,#f9fafb);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;z-index:9999;
-    font-family:Inter,Arial,sans-serif;text-align:center;
-    transition:opacity .3s ease;">
-    <div style="
-      background:var(--card,#fff);padding:2rem 2.5rem;border-radius:1rem;
-      box-shadow:0 4px 12px rgba(0,0,0,.1);max-width:320px;width:90%;">
-      <h2 style="margin:0 0 1rem;color:var(--ink,#111)">🔒 PO Hub Access</h2>
-      <p style="margin:.5rem 0 1.5rem;color:var(--ink-2,#555);font-size:.95rem">
-        Please enter the passcode to continue.
-      </p>
-      <input type="password" id="passInput" placeholder="Enter passcode"
-        style="padding:.6rem .8rem;border:1px solid var(--border,#ccc);
-        border-radius:.5rem;width:100%;margin-bottom:1rem;
-        background:var(--bg,#fff);color:var(--ink,#111);">
-      <button onclick="checkPasscode()" style="
-        padding:.6rem 1rem;width:100%;border:none;border-radius:.5rem;
-        background:#2563eb;color:white;font-weight:600;cursor:pointer;">
-        Unlock
-      </button>
-      <p id="errorMsg" style="color:#dc2626;display:none;margin-top:.75rem;font-size:.9rem;">
-        Wrong passcode. Try again.
-      </p>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header class="site-header" id="header">
-    <div class="container header-inner">
-      <div class="brand" data-view="home" title="Go home">
-        <img src="https://raw.githubusercontent.com/purchase-order-team/Processors/main/path/to/photos/Default%20KarParts360%20LOGO%20Version%203.png" alt="KarParts360" />
-        <strong>PO TEAM</strong>
-      </div>
-      <nav class="primary-nav" id="primary-nav">
-        <ul><li><a href="#" data-view="home">Home</a></li></ul>
-        <button class="icon-btn" id="themeToggle" aria-label="Toggle dark/light"></button>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Hero/Home -->
-  <section class="hero page active" data-page="home">
-    <div class="container">
-      <h1>PO Hub — No Missing Pieces</h1>
-      <p>Unless someone forgot to submit the order.</p>
-
-      <!-- Global Search -->
-      <form class="search" onsubmit="event.preventDefault()" role="search">
-        <input id="globalSearch" type="search"
-               placeholder="Search tools, pages, keywords… (e.g., ‘SOP returns’, ‘marketplace KPI’, ‘supplier portal’)"
-               aria-label="Search" autocomplete="off" />
-        <button type="submit" id="searchBtn">Search</button>
-        <div class="results" id="searchResults" role="listbox" aria-label="Search results"></div>
-      </form>
-    </div>
-  </section>
-
-  <main class="container page active" data-page="home">
-    <section class="categories" aria-label="Quick links">
-      <a class="category" href="#" data-view="po-projects">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 7.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"/><path d="M3 10h18"/>
-          </svg>
-        </span>
-        <span class="title">PO Projects</span>
-      </a>
-
-      <a class="category" href="#" data-view="supplier-contacts">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 20a5 5 0 0 1 10 0"/><path d="M11 20a5 5 0 0 1 10 0"/>
-          </svg>
-        </span>
-        <span class="title">Supplier Contacts</span>
-      </a>
-
-      <a class="category" href="#" data-view="email-templates">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
-          </svg>
-        </span>
-        <span class="title">Email Templates</span>
-      </a>
-
-      <a class="category" href="#" data-view="schedule">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-        </span>
-        <span class="title">Schedule</span>
-      </a>
-
-      <a class="category" href="#" data-view="task-monitoring">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 3h18v4H3z"/><path d="M3 11h18v4H3z"/><path d="M3 19h18v2H3z"/>
-          </svg>
-        </span>
-        <span class="title">Task Monitoring</span>
-      </a>
-
-      <a class="category" href="#" data-view="tracker">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="4" y="4" width="16" height="16" rx="3"/><path d="M7.5 12.5l3 3 6-7"/>
-          </svg>
-        </span>
-        <span class="title">Tracker</span>
-      </a>
-
-      <a class="category" href="#" data-view="marketplace-performance">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 19h18"/><path d="M7 19V10"/><path d="M12 19V5"/><path d="M17 19V13"/>
-          </svg>
-        </span>
-        <span class="title">Marketplace Performance</span>
-      </a>
-
-      <a class="category" href="#" data-view="top-performers">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8 21h8M9 17h6m-8-9V4h10v4a5 5 0 0 1-10 0Z"/>
-          </svg>
-        </span>
-        <span class="title">Top Performers</span>
-      </a>
-
-      <!-- NEW categories -->
-      <a class="category" href="#" data-view="po-spreadsheets" title="PO Spreadsheets">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/>
-          </svg>
-        </span>
-        <span class="title">PO Spreadsheets</span>
-      </a>
-
-      <a class="category" href="#" data-view="po-tools" title="PO Tools">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 7l-5 5 3 3 5-5"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L20 7l-3-3 1.5-1.5z"/><path d="M2 22l6-2 8-8-4-4-8 8-2 6z"/>
-          </svg>
-        </span>
-        <span class="title">PO Tools</span>
-      </a>
-
-      <a class="category" href="#" data-view="marketplaces" title="Marketplaces">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 7h18l-2 12H5L3 7z"/><path d="M16 7a4 4 0 0 1-8 0"/>
-          </svg>
-        </span>
-        <span class="title">Marketplaces</span>
-      </a>
-
-      <a class="category" href="#" data-view="mailboxes" title="Mailboxes">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
-          </svg>
-        </span>
-        <span class="title">Mailboxes</span>
-      </a>
-
-      <a class="category" href="#" data-view="supplier-websites" title="Supplier Websites">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>
-          </svg>
-        </span>
-        <span class="title">Supplier Websites</span>
-      </a>
-
-      <!-- NEW: SOPs -->
-      <a class="category" href="#" data-view="sops" title="Standard Operating Procedures">
-        <span class="icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h10l4 4v12a2 2 0 0 1-2 2H4z"/><path d="M14 4v4h4"/><path d="M7 12h8"/><path d="M7 16h8"/>
-          </svg>
-        </span>
-        <span class="title">SOPs</span>
-      </a>
-    </section>
-  </main>
-
-  <!-- Pages -->
-  <section class="container page" data-page="po-projects">
-    <div class="iframe-wrap">
-      <iframe title="PO Projects" src="https://kp360-po.github.io/KPP/PO_Portal.html" loading="lazy"></iframe>
-    </div>
-  </section>
-
-  <section class="container page" data-page="supplier-contacts">
-    <div class="content">
-      <div class="contacts-controls">
-        <strong>Supplier Contacts</strong>
-        <input id="contactsSearch" type="search" placeholder="Search name, supplier, email, phone, notes…" />
-        <label>Supplier:
-          <select id="contactsSupplierFilter"><option value="">All</option></select>
-        </label>
-        <span class="contacts-status" id="contactsStatus">Loading…</span>
-      </div>
-      <div id="contactsTableWrap"></div>
-      <div id="contactsError" class="error" style="display:none"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="email-templates">
-    <div class="iframe-wrap">
-      <iframe title="Email Templates" src="https://kp360-po.github.io/KPP/EmailTemplates.html" loading="lazy"></iframe>
-    </div>
-  </section>
-
-  <section class="container page" data-page="schedule">
-    <div class="iframe-wrap">
-      <iframe title="Schedule" src="https://netorgft5128391.sharepoint.com/:x:/s/POTEAM/EYDj32TObklAm3lXkm-i8nABDVhrVsumG3LWzLhfc9ODxw?e=FKdzui" loading="lazy"></iframe>
-    </div>
-  </section>
-
-  <section class="container page" data-page="task-monitoring">
-    <div class="iframe-wrap">
-      <iframe title="Task Monitoring" src="https://kp360-po.github.io/task-tracker/" loading="lazy"></iframe>
-    </div>
-  </section>
-
-  <section class="container page" data-page="marketplace-performance">
-    <div class="content"><p>KPIs, revenue trends, conversion rates, and marketplace health indicators.</p></div>
-  </section>
-
-  <section class="container page" data-page="top-performers">
-    <div class="content">
-      <h2 style="margin:0 0 .75rem">Top Performers of the Month</h2>
-      <div class="tp-grid" id="tp-page-grid"></div>
-    </div>
-  </section>
-
-  <!-- NEW PAGES (link grids) -->
-  <section class="container page" data-page="po-spreadsheets">
-    <div class="content">
-      <h2 style="margin-top:0">PO Spreadsheets</h2>
-      <div id="grid-po-spreadsheets"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="po-tools">
-    <div class="content">
-      <h2 style="margin-top:0">PO Tools</h2>
-      <div id="grid-po-tools"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="marketplaces">
-    <div class="content">
-      <h2 style="margin-top:0">Marketplaces</h2>
-      <div id="grid-marketplaces"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="tracker">
-    <div class="content">
-      <h2 style="margin-top:0">Tracker</h2>
-      <div id="grid-tracker"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="mailboxes">
-    <div class="content">
-      <h2 style="margin-top:0">Mailboxes</h2>
-      <div id="grid-mailboxes"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="supplier-websites">
-    <div class="content">
-      <h2 style="margin-top:0">Supplier Websites</h2>
-      <div id="grid-supplier-websites"></div>
-    </div>
-  </section>
-
-  <section class="container page" data-page="sops">
-    <div class="content">
-      <h2 style="margin-top:0">SOPs</h2>
-      <div id="grid-sops"></div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer id="footer">© KarParts360 PO Team 2025</footer>
-
-<!-- Inlined from app.js -->
-<script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1" name="viewport"/><title>KP360 · PO Hub</title><link href="https://www.karparts360.com/images/simplecms/favicon.ico" rel="icon" type="image/x-icon"/><meta content="light dark" name="color-scheme"/><!-- Perf hints --><link crossorigin="" href="https://raw.githubusercontent.com" rel="preconnect"/><link crossorigin="" href="https://script.google.com" rel="preconnect"/><link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+  <!-- Assets (cache-busted) --><!-- Inlined from styles.css -->
+  <style>:root{--brand:#1f2937;--brand-600:#111827;--ink:#0f172a;--ink-2:#4b5563;--bg:#f6f7fb;--card:#ffffff;--border:#e5e7eb;--muted:#6b7280;--ring-steel-from:#e9eef7;--ring-steel-to:#cfd8e6;--header-h:64px;--footer-h:36px;--res-bg:var(--card);--res-title:#111827;--res-sub:#475569;--res-url:#374151;--res-row:#ffffff;--res-row-hover:#f3f4f6;--res-open-bg:#f8fafc}body.dark{--brand:#60a5fa;--brand-600:#3b82f6;--ink:#e5e7eb;--ink-2:#9ca3af;--bg:#0f172a;--card:#1e293b;--border:#334155;--muted:#94a3b8;--ring-steel-from:#334155;--ring-steel-to:#475569;--res-bg:#141c2b;--res-title:#e5e7eb;--res-sub:#b0bccb;--res-url:#c3ccd8;--res-row:#1e293b;--res-row-hover:rgba(255,255,255,.09);--res-open-bg:#0f172a}*{box-sizing:border-box}html,body{height:100%}body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;line-height:1.6;background:var(--bg);color:var(--ink);padding-bottom:var(--footer-h);transition:background .25s ease,color .25s ease;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}.container{width:min(1400px,96%);margin-inline:auto}.page.container:not([data-page="home"]){width:min(2180px,99%)}.site-header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.85);backdrop-filter:saturate(1.15) blur(8px);border-bottom:1px solid var(--border);height:var(--header-h);transition:background .25s}body.dark .site-header{background:rgba(15,23,42,.9)}.header-inner{display:flex;align-items:center;gap:.6rem;min-height:var(--header-h);padding:.2rem .4rem}.brand{display:flex;align-items:center;gap:.5rem;cursor:pointer}.brand img{height:22px;display:block}.brand strong{font-size:.9rem}.primary-nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}.primary-nav ul{list-style:none;display:flex;gap:.6rem;margin:0;padding:0}.primary-nav a{color:var(--ink-2);font-weight:600;font-size:.85rem;padding:.25rem .45rem;border-radius:.4rem;transition:background .2s,color .2s}.primary-nav a:hover{color:var(--ink);background:rgba(0,0,0,.05)}body.dark .primary-nav a:hover{background:rgba(255,255,255,.06)}.icon-btn{border:1px solid var(--border);background:var(--card);color:var(--ink);width:32px;height:32px;display:grid;place-items:center;border-radius:.45rem;cursor:pointer;padding:0;line-height:0;transition:background .2s,border-color .2s,filter .2s}.icon-btn svg{width:18px;height:18px;stroke:currentColor;display:block}.icon-btn:hover{filter:brightness(.98)}.hero{background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff;padding:1.2rem 0;transition:background .25s}body.dark .hero{background:linear-gradient(180deg,#1e40af 0%,#1e293b 100%)}.hero h1{margin:0 0 .25rem;font-size:1.5rem}.hero p{margin:.1rem 0 .8rem;opacity:.95}.search{position:relative;display:flex;max-width:620px;background:#fff;border-radius:.6rem;overflow:visible;box-shadow:0 10px 24px rgba(0,0,0,.15)}.search input{flex:1;border:0;padding:.6rem .75rem;font-size:.95rem;color:#111;background:transparent}.search button{background:var(--brand);color:#fff;border:0;padding:.6rem .9rem;font-weight:700;border-radius:0 .6rem .6rem 0}body.dark .search{background:#0b1220;box-shadow:0 0 0 1px var(--border)}body.dark .search input{color:var(--ink)}categories,.categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(160px,22vw,260px),1fr));gap:clamp(.6rem,1.5vw,1.2rem);margin:1.4rem 0 1.6rem}.category{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:clamp(.75rem,1.4vw,1.1rem);text-align:center;box-shadow:0 1px 10px rgba(0,0,0,.05);transition:transform .15s ease,box-shadow .15s ease,background .25s,border-color .25s}.category:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}.icon{position:relative;width:clamp(66px,10vw,86px);height:clamp(66px,10vw,86px);margin:auto;border-radius:50%;display:grid;place-items:center;background:radial-gradient(closest-side,#fff 64%,transparent 66%),conic-gradient(var(--ring-steel-from),var(--ring-steel-to));box-shadow:0 8px 18px rgba(0,0,0,.06),inset 0 0 0 1px rgba(255,255,255,.8)}.icon svg{width:clamp(30px,5vw,40px);height:clamp(30px,5vw,40px)}body.dark .icon svg{color:var(--brand)}.category .title{display:block;margin-top:.65rem;font-weight:700;font-size:clamp(.9rem,1.2vw,1rem)}.content{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 6px rgba(0,0,0,.04);transition:background .25s,border-color .25s}.iframe-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card)}.iframe-wrap iframe{width:100%;height:calc(100vh - var(--header-h) - var(--footer-h));border:0;display:block}.page{display:none}.page.active{display:block}footer{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:.35rem 0;color:var(--muted);border-top:1px solid var(--border);font-size:.72rem;background:#f9fafb;z-index:70;transition:background .25s,color .25s,border-color .25s}footer.slim{padding:.25rem 0;font-size:.68rem;opacity:.9}body.dark footer{background:#0b1220}.contacts-controls{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem}.contacts-controls input,.contacts-controls select{padding:.5rem .6rem;border:1px solid var(--border);border-radius:.5rem;background:var(--card);color:var(--ink)}.contacts-controls input{min-width:220px}.contacts-status{font-size:.85rem;color:var(--ink-2)}.contacts-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}.contacts-table th,.contacts-table td{padding:.6rem .7rem;border-bottom:1px solid var(--border);text-align:left;font-size:.92rem;vertical-align:top}.contacts-table th{background:linear-gradient(180deg,#f8fafc,#f1f5f9);font-weight:700}body.dark .contacts-table th{background:linear-gradient(180deg,#0b1220,#111827)}.error{background:#fff3f3;border:1px solid #fca5a5;color:#991b1b;padding:.6rem .8rem;border-radius:.5rem}#tp-page-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}.tp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center}.tp-card img{width:110px;height:110px;border-radius:50%;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:filter .25s ease,opacity .2s}.tp-card img.img-loading{filter:blur(8px);opacity:.7}.tp-card .name{font-weight:700;margin-top:.4rem}.tp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000}.tp-modal{width:min(900px,92%);background:var(--card);color:var(--ink);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden}.tp-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff}.tp-close{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;padding:.35rem .6rem;border-radius:8px;cursor:pointer}.tp-body{padding:14px}.tp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.tp-skeleton{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.tp-skeleton .cell{height:160px;border-radius:12px;background:linear-gradient(90deg,#eee,#f5f5f5,#eee);background-size:200% 100%;animation:shine 1.1s linear infinite}@keyframes shine{0%{background-position:200% 0}100%{background-position:-200% 0}}.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(180px,22vw,260px),1fr));gap:clamp(.6rem,1.4vw,1rem)}.link-card{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"ico title open" "ico note open";align-items:center;gap:.65rem .75rem;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.85rem .9rem;box-shadow:0 1px 10px rgba(0,0,0,.05);transition:transform .15s ease,box-shadow .15s ease,border-color .2s,background .2s}.link-card:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,.10)}.link-card .lc-ico{grid-area:ico;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:0 0 42px;background:radial-gradient(closest-side,#fff 64%,transparent 66%),conic-gradient(var(--ring-steel-from),var(--ring-steel-to));box-shadow:0 6px 14px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.8)}body.dark .link-card .lc-ico{background:radial-gradient(closest-side,#0b1220 64%,transparent 66%),conic-gradient(var(--ring-steel-from),var(--ring-steel-to))}.link-card .lc-ico svg{width:22px;height:22px;color:var(--brand)}.link-card .lc-title{grid-area:title;font-weight:700;font-size:.98rem;color:var(--ink);line-height:1.2}.link-card .lc-note{grid-area:note;font-size:.82rem;color:var(--ink-2);margin-top:.15rem}.link-card .lc-open{grid-area:open;width:28px;height:28px;border:1px solid var(--border);border-radius:.5rem;display:grid;place-items:center;background:var(--res-open-bg);color:var(--res-title);transition:filter .15s ease,background .15s ease}.link-card:hover .lc-open{filter:brightness(.98)}.link-card .lc-open svg{width:16px;height:16px;stroke:currentColor}.link-card:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.results{position:absolute;top:100%;left:0;right:0;margin-top:.35rem;background:var(--res-bg);border:1px solid var(--border);border-radius:.6rem;box-shadow:0 14px 34px rgba(0,0,0,.28);max-height:360px;overflow:auto;z-index:2000;display:none;overflow-anchor:none}.results.visible{display:block}.res-header{padding:.5rem .8rem;font-weight:600;font-size:.85rem;color:var(--res-sub);background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.04));border-bottom:1px solid var(--border)}body.dark .res-header{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.06))}.res-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.6rem .8rem;color:var(--res-title);background:var(--res-row);border-top:1px solid var(--border);cursor:pointer;transition:background .15s ease,transform .08s ease}.res-item:first-of-type{border-top:0}.res-item:hover{background:var(--res-row-hover);transform:translateX(1px)}.res-title-btn{flex:1;display:flex;align-items:flex-start;gap:.5rem;background:none;border:0;padding:0;text-align:left;color:inherit;cursor:pointer}.res-ico{width:24px;height:24px;border-radius:.4rem;display:grid;place-items:center;background:linear-gradient(180deg,#f8fafc,#eef2f7)}body.dark .res-ico{background:linear-gradient(180deg,#0b1220,#0f172a)}.res-title-text{font-weight:700;color:var(--res-title)}.res-title-btn:hover .res-title-text{text-decoration:underline}.res-sub{font-size:.82rem;color:var(--res-sub)}.res-url{color:var(--res-url);text-decoration:none;word-break:break-all}.res-open-btn{background:var(--res-open-bg);color:var(--res-title);border:1px solid var(--border);padding:.28rem .4rem;border-radius:.45rem;line-height:0;cursor:pointer;transition:filter .15s ease,background .15s ease}.res-open-btn svg{stroke:currentColor;width:16px;height:16px;display:block}body.dark .res-open-btn{background:#0f172a;color:#e5e7eb}.res-open-btn:hover{filter:brightness(.98)}.res-title-btn:focus-visible,.res-open-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:.35rem}.hero .results{background:var(--res-bg);border-color:var(--border);color:var(--res-title)}.hero .results .res-header{color:var(--res-sub)}.hero .results .res-item,.hero .results .res-title-text{color:var(--res-title)}.hero .results .res-sub,.hero .results .res-url{color:var(--res-sub)}@media (prefers-contrast:more){.res-item:hover{background:color-mix(in srgb,var(--res-row) 80%,#000 20%)}body.dark .res-item:hover{background:color-mix(in srgb,var(--res-row) 80%,#fff 20%)}}:root{--res-row:#ffffff;--res-title:#111827;--res-sub:#475569;--res-url:#374151}body.dark{--res-row:#141c2b;--res-title:#ffffff;--res-sub:#cbd5e1;--res-url:#bac7d6}.results{background:var(--res-bg,var(--card))}.res-item,.res-item:hover,.res-item:focus,.res-item:focus-within{background:var(--res-row) !important}.res-title-btn{background:transparent !important;appearance:none}.res-title-btn:hover{background:transparent !important}.res-title-text{color:var(--res-title) !important}.res-sub{color:var(--res-sub) !important}.res-url{color:var(--res-url) !important}body:not(.dark) .res-item:hover{filter:brightness(0.98)}body.dark .res-item:hover{background:#1b2436 !important}body.dark #lockScreen{background:var(--bg,#111827)}body.dark #lockScreen div{background:var(--card,#1f2937)}body.dark #passInput{background:#111827;color:#f9fafb;border-color:#374151}:root{--t-fast:.15s;--t-med:.25s}body.dark{--bg:#0f1520;--bg-2:#111827;--card:#131b29;--card-2:#0f1623;--ink:#e6edf3;--ink-2:#9fb4c7;--ink-3:#7b8fa6;--brand:#5aa7ff;--brand-2:#2f7de8;--ok:#47d16c;--warn:#ffc857;--err:#ff6b6b;--border:rgba(255,255,255,.08);--ring:rgba(90,167,255,.45);--shadow:0 10px 30px rgba(0,0,0,.45);color:var(--ink);background:radial-gradient(1200px 600px at 20% -10%,#173055 0%,transparent 60%),radial-gradient(1200px 600px at 100% -20%,#1b2440 0%,transparent 60%),var(--bg)}body.dark .site-header{background:linear-gradient(180deg,rgba(19,31,53,.92),rgba(19,31,53,.75));border-bottom:1px solid var(--border);backdrop-filter:saturate(120%) blur(6px)}body.dark .hero{background:linear-gradient(180deg,rgba(33,55,97,.45),rgba(33,55,97,0) 70%)}body.dark .icon-btn,body.dark .search button,body.dark .btn{background:linear-gradient(180deg,var(--brand) 0%,var(--brand-2) 100%);color:white;border:0;border-radius:.65rem;box-shadow:0 4px 14px rgba(90,167,255,.28);transition:transform var(--t-fast),box-shadow var(--t-fast),filter var(--t-fast)}body.dark .icon-btn:hover,body.dark .search button:hover,body.dark .btn:hover{filter:brightness(1.05);transform:translateY(-1px)}body.dark .icon-btn:active,body.dark .search button:active,body.dark .btn:active{transform:translateY(0)}body.dark .search input,body.dark input[type="search"],body.dark input[type="text"],body.dark select{background:linear-gradient(180deg,var(--card) 0%,var(--card-2) 100%);color:var(--ink);border:1px solid var(--border);border-radius:.75rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}body.dark .search input::placeholder,body.dark input::placeholder{color:var(--ink-3)}body.dark .search input:focus,body.dark .search button:focus,body.dark a:focus,body.dark button:focus,body.dark select:focus{outline:none;box-shadow:0 0 0 3px var(--ring)}body.dark .categories .category{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.00));border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);transition:transform var(--t-med),box-shadow var(--t-med),border-color var(--t-fast)}body.dark .categories .category:hover{transform:translateY(-3px);border-color:rgba(90,167,255,.25);box-shadow:0 12px 34px rgba(20,27,38,.6)}body.dark .categories .category .title{color:var(--ink)}body.dark .categories .category svg{color:var(--brand);opacity:.95}body.dark .link-card{background:linear-gradient(180deg,var(--card) 0%,var(--card-2) 100%);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);transition:transform var(--t-med),border-color var(--t-fast),box-shadow var(--t-med)}body.dark .link-card:hover{transform:translateY(-2px);border-color:rgba(90,167,255,.25);box-shadow:0 14px 36px rgba(9,12,18,.7)}body.dark .lc-title{color:var(--ink)}body.dark .lc-note{color:var(--ink-2)}body.dark .lc-ico svg,body.dark .lc-open svg{color:var(--brand)}body.dark .contacts-table{background:var(--card);color:var(--ink);border:1px solid var(--border)}body.dark .contacts-table thead th{background:rgba(255,255,255,.03);color:var(--ink);border-bottom:1px solid var(--border)}body.dark .contacts-table tbody tr:hover{background:rgba(90,167,255,.06)}body.dark #footer{background:rgba(13,18,28,.85);color:var(--ink-2);border-top:1px solid var(--border)}body.dark *::-webkit-scrollbar{height:10px;width:10px}body.dark *::-webkit-scrollbar-track{background:transparent}body.dark *::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:10px;border:2px solid transparent;background-clip:padding-box}body.dark *::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}body.dark .tp-overlay{background:rgba(5,8,13,.7);backdrop-filter:blur(2px)}body.dark .tp-modal{background:linear-gradient(180deg,var(--card) 0%,var(--card-2) 100%);border:1px solid var(--border);color:var(--ink);box-shadow:var(--shadow)}body.dark .tp-head{border-bottom:1px solid var(--border)}.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap}.section-header h2{margin:0;font-size:1.4rem;font-weight:600}.links-tools{display:flex;align-items:center;gap:.5rem}.links-tools input.links-filter{padding:.4rem .6rem;min-width:220px;border:1px solid var(--border);border-radius:.5rem;background:var(--card);color:var(--ink)}.links-tools .links-count{font-size:0.85rem;color:var(--ink-2)}</style></head><body><!-- Passcode Gate --><div id="lockScreen" style=" position:fixed;top:0;left:0;width:100%;height:100%; background:var(--bg,#f9fafb);display:flex;flex-direction:column; align-items:center;justify-content:center;z-index:9999; font-family:Inter,Arial,sans-serif;text-align:center; transition:opacity .3s ease;"><div style=" background:var(--card,#fff);padding:2rem 2.5rem;border-radius:1rem; box-shadow:0 4px 12px rgba(0,0,0,.1);max-width:320px;width:90%;"><h2 style="margin:0 0 1rem;color:var(--ink,#111)">🔒 PO Hub Access</h2><p style="margin:.5rem 0 1.5rem;color:var(--ink-2,#555);font-size:.95rem"> Please enter the passcode to continue. </p><input id="passInput" placeholder="Enter passcode" style="padding:.6rem .8rem;border:1px solid var(--border,#ccc); border-radius:.5rem;width:100%;margin-bottom:1rem; background:var(--bg,#fff);color:var(--ink,#111);" type="password"/><button onclick="checkPasscode()" style=" padding:.6rem 1rem;width:100%;border:none;border-radius:.5rem; background:#2563eb;color:white;font-weight:600;cursor:pointer;"> Unlock </button><p id="errorMsg" style="color:#dc2626;display:none;margin-top:.75rem;font-size:.9rem;"> Wrong passcode. Try again. </p></div></div><!-- Header --><header class="site-header" id="header"><div class="container header-inner"><div class="brand" data-view="home" title="Go home"><img alt="KarParts360" src="https://raw.githubusercontent.com/purchase-order-team/Processors/main/path/to/photos/Default%20KarParts360%20LOGO%20Version%203.png"/><strong>PO TEAM</strong></div><nav class="primary-nav" id="primary-nav"><ul><li><a data-view="home" href="#">Home</a></li></ul><button aria-label="Toggle dark/light" class="icon-btn" id="themeToggle"></button></nav></div></header><!-- Hero/Home --><section class="hero page active" data-page="home"><div class="container"><h1>PO Hub — No Missing Pieces</h1><p>Unless someone forgot to submit the order.</p><!-- Global Search --><form class="search" onsubmit="event.preventDefault()" role="search"><input aria-label="Search" autocomplete="off" id="globalSearch" placeholder="Search tools, pages, keywords… (e.g., ‘SOP returns’, ‘marketplace KPI’, ‘supplier portal’)" type="search"><button id="searchBtn" type="submit">Search</button><div aria-label="Search results" class="results" id="searchResults" role="listbox"></div></input></form></div></section><main class="container page active" data-page="home"><section aria-label="Quick links" class="categories"><a class="category" data-view="po-projects" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 7.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 10h18"></path></svg></span><span class="title">PO Projects</span></a><a class="category" data-view="supplier-contacts" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M3 20a5 5 0 0 1 10 0"></path><path d="M11 20a5 5 0 0 1 10 0"></path></svg></span><span class="title">Supplier Contacts</span></a><a class="category" data-view="email-templates" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="14" rx="2" width="18" x="3" y="5"></rect><path d="M3 7l9 6 9-6"></path></svg></span><span class="title">Email Templates</span></a><a class="category" data-view="schedule" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></span><span class="title">Schedule</span></a><a class="category" data-view="task-monitoring" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 3h18v4H3z"></path><path d="M3 11h18v4H3z"></path><path d="M3 19h18v2H3z"></path></svg></span><span class="title">Task Monitoring</span></a><a class="category" data-view="tracker" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="3" width="16" x="4" y="4"></rect><path d="M7.5 12.5l3 3 6-7"></path></svg></span><span class="title">Tracker</span></a><a class="category" data-view="marketplace-performance" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 19h18"></path><path d="M7 19V10"></path><path d="M12 19V5"></path><path d="M17 19V13"></path></svg></span><span class="title">Marketplace Performance</span></a><a class="category" data-view="top-performers" href="#"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M8 21h8M9 17h6m-8-9V4h10v4a5 5 0 0 1-10 0Z"></path></svg></span><span class="title">Top Performers</span></a><!-- NEW categories --><a class="category" data-view="po-spreadsheets" href="#" title="PO Spreadsheets"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="4"></rect><path d="M7 8h10M7 12h10M7 16h6"></path></svg></span><span class="title">PO Spreadsheets</span></a><a class="category" data-view="po-tools" href="#" title="PO Tools"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M14 7l-5 5 3 3 5-5"></path><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L20 7l-3-3 1.5-1.5z"></path><path d="M2 22l6-2 8-8-4-4-8 8-2 6z"></path></svg></span><span class="title">PO Tools</span></a><a class="category" data-view="marketplaces" href="#" title="Marketplaces"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 7h18l-2 12H5L3 7z"></path><path d="M16 7a4 4 0 0 1-8 0"></path></svg></span><span class="title">Marketplaces</span></a><a class="category" data-view="mailboxes" href="#" title="Mailboxes"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="14" rx="2" width="18" x="3" y="5"></rect><path d="M3 7l9 6 9-6"></path></svg></span><span class="title">Mailboxes</span></a><a class="category" data-view="supplier-websites" href="#" title="Supplier Websites"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"></path></svg></span><span class="title">Supplier Websites</span></a><!-- NEW: SOPs --><a class="category" data-view="sops" href="#" title="Standard Operating Procedures"><span class="icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M4 4h10l4 4v12a2 2 0 0 1-2 2H4z"></path><path d="M14 4v4h4"></path><path d="M7 12h8"></path><path d="M7 16h8"></path></svg></span><span class="title">SOPs</span></a></section></main><!-- Pages --><section class="container page" data-page="po-projects"><div class="iframe-wrap"><iframe loading="lazy" src="https://kp360-po.github.io/KPP/PO_Portal.html" title="PO Projects"></iframe></div></section><section class="container page" data-page="supplier-contacts"><div class="content"><div class="contacts-controls"><strong>Supplier Contacts</strong><input id="contactsSearch" placeholder="Search name, supplier, email, phone, notes…" type="search"/><label>Supplier: <select id="contactsSupplierFilter"><option value="">All</option></select></label><span class="contacts-status" id="contactsStatus">Loading…</span></div><div id="contactsTableWrap"></div><div class="error" id="contactsError" style="display:none"></div></div></section><section class="container page" data-page="email-templates"><div class="iframe-wrap"><iframe loading="lazy" src="https://kp360-po.github.io/KPP/EmailTemplates.html" title="Email Templates"></iframe></div></section><section class="container page" data-page="schedule"><div class="iframe-wrap"><iframe loading="lazy" src="https://netorgft5128391.sharepoint.com/:x:/s/POTEAM/EYDj32TObklAm3lXkm-i8nABDVhrVsumG3LWzLhfc9ODxw?e=FKdzui" title="Schedule"></iframe></div></section><section class="container page" data-page="task-monitoring"><div class="iframe-wrap"><iframe loading="lazy" src="https://kp360-po.github.io/task-tracker/" title="Task Monitoring"></iframe></div></section><section class="container page" data-page="marketplace-performance"><div class="content"><p>KPIs, revenue trends, conversion rates, and marketplace health indicators.</p></div></section><section class="container page" data-page="top-performers"><div class="content"><h2 style="margin:0 0 .75rem">Top Performers of the Month</h2><div class="tp-grid" id="tp-page-grid"></div></div></section><!-- NEW PAGES (link grids) --><section class="container page" data-page="po-spreadsheets"><div class="content"><h2 style="margin-top:0">PO Spreadsheets</h2><div id="grid-po-spreadsheets"></div></div></section><section class="container page" data-page="po-tools"><div class="content"><h2 style="margin-top:0">PO Tools</h2><div id="grid-po-tools"></div></div></section><section class="container page" data-page="marketplaces"><div class="content"><h2 style="margin-top:0">Marketplaces</h2><div id="grid-marketplaces"></div></div></section><section class="container page" data-page="tracker"><div class="content"><h2 style="margin-top:0">Tracker</h2><div id="grid-tracker"></div></div></section><section class="container page" data-page="mailboxes"><div class="content"><h2 style="margin-top:0">Mailboxes</h2><div id="grid-mailboxes"></div></div></section><section class="container page" data-page="supplier-websites"><div class="content"><h2 style="margin-top:0">Supplier Websites</h2><div id="grid-supplier-websites"></div></div></section><section class="container page" data-page="sops"><div class="content"><h2 style="margin-top:0">SOPs</h2><div id="grid-sops"></div></div></section><!-- Footer --><footer id="footer">© KarParts360 PO Team 2025</footer><!-- Inlined from app.js --><script>
 /* ========= Router & Theme ========= */
 function getPages(){ return Array.from(document.querySelectorAll('.page')); }
 const footer = document.getElementById('footer');
@@ -980,6 +22,8 @@ function setActive(view){
 
   // toggle active page
   getPages().forEach(p => p.classList.toggle('active', p.getAttribute('data-page') === v));
+
+  closeResults();
 
   const hash = v === 'home' ? '#home' : '#' + v;
   if (location.hash !== hash) history.pushState({view:v}, '', hash);
@@ -1017,6 +61,10 @@ function setActive(view){
 const SUPPLIER_API = "https://script.google.com/macros/s/AKfycbzV_FMsyjQhtzgTZdb0y0jf9vgq8_ySPY2LEQXN6j9KSLy_z7oTnfDcmOPEQZCyGTm6dw/exec";
 
 /* ========= Small utils ========= */
+/* --- Search helpers (reactive + autoclose) --- */
+function debounce(fn, delay=180){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,args), delay); }; }
+function closeResults(){ try{ resultsEl?.classList.remove('visible'); if(resultsEl) resultsEl.innerHTML=''; }catch(_){} }
+
 async function getJSON(res){
   const text = await res.text();
   try { return JSON.parse(text); } catch(e){ throw new Error('Invalid JSON from API'); }
@@ -1465,6 +513,76 @@ function harvestFromHomeIcons(){
   return entries;
 }
 
+
+// Harvest visible "cards" and their content on the active page for search
+function harvestFromDOMCards(){
+  const entries = [];
+  const active = document.querySelector('.page.active');
+  if (!active) return entries;
+
+  const page = active.getAttribute('data-page') || 'home';
+  const pageTitle = (active.querySelector('h1, h2, .title')?.textContent || '').trim();
+
+  // 1) Generic list-card pattern used in this app (lc-*)
+  active.querySelectorAll('.lc').forEach(card => {
+    const title = (card.querySelector('.lc-title')?.textContent || '').trim();
+    const note  = (card.querySelector('.lc-note')?.textContent || '').trim();
+    // prefer explicit link button, else any anchor inside
+    const urlEl = card.querySelector('a[href]');
+    const url = urlEl ? (urlEl.getAttribute('href') || urlEl.href || '') : '';
+
+    const hay = [title, note, url, pageTitle].join(' ').toLowerCase();
+    if (title || note || url){
+      entries.push({
+        kind: 'item',
+        page,
+        title: title || (url ? 'Link' : pageTitle || 'Item'),
+        subtitle: note || pageTitle,
+        url,
+        haystack: hay
+      });
+    }
+  });
+
+  // 2) Home/category tiles (Home icons)
+  active.querySelectorAll('a.category').forEach(a => {
+    const title = (a.querySelector('.title')?.textContent || a.getAttribute('title') || '').trim();
+    const note  = (a.querySelector('.subtitle, .desc')?.textContent || '').trim();
+    const url   = a.getAttribute('href') || '';
+    const hay = [title, note, url, pageTitle].join(' ').toLowerCase();
+    if (title || note){
+      entries.push({ kind:'category', page, title: title || pageTitle || 'Section', subtitle: 'Section', url, haystack: hay });
+    }
+  });
+
+  // 3) Any element explicitly opting-in
+  active.querySelectorAll('[data-search], [data-search-text]').forEach(el => {
+    const title = (el.getAttribute('data-search') || '').trim();
+    const text  = (el.getAttribute('data-search-text') || el.textContent || '').trim();
+    const urlEl = el.tagName === 'A' ? el : el.querySelector('a[href]');
+    const url   = urlEl ? (urlEl.getAttribute('href') || urlEl.href || '') : '';
+    const hay   = [title, text, url, pageTitle].join(' ').toLowerCase();
+    if (title || text){
+      entries.push({ kind:'item', page, title: title || (text.split('\n')[0] || '').slice(0,80) || 'Item', subtitle: pageTitle, url, haystack: hay });
+    }
+  });
+
+  // 4) Fallback generic "card"-ish blocks by class name heuristics
+  active.querySelectorAll('[class*="card"], [class*="tile"], [class*="entry"], [class*="item"], [class*="box"]').forEach(el=>{
+    // Avoid double counting things we've already captured
+    if (el.closest('.lc')) return;
+    const title = (el.querySelector('h1,h2,h3,.title,.header')?.textContent || '').trim();
+    const body  = (el.querySelector('p,.desc,.content')?.textContent || '').trim();
+    const urlEl = el.querySelector('a[href]');
+    const url   = urlEl ? (urlEl.getAttribute('href') || urlEl.href || '') : '';
+    const hay   = [title, body, url, pageTitle].join(' ').toLowerCase();
+    if (title || body){
+      entries.push({ kind:'item', page, title: title || 'Item', subtitle: body.slice(0,120), url, haystack: hay });
+    }
+  });
+
+  return entries;
+}
 function buildIndex(){
   const entries = [];
   CATALOG.forEach(cat => {
@@ -1484,6 +602,8 @@ function buildIndex(){
     }catch(_e){}
   });
   if (!entries.some(e => e.kind === 'category')) entries.push(...harvestFromHomeIcons());
+  // include visible cards/content from the active page
+  try{ entries.push(...harvestFromDOMCards()); }catch(_e){}
   return entries;
 }
 
@@ -1580,6 +700,8 @@ function renderResults(list, q){
       if (e.kind==='item' && e.url){
         try{ window.open(e.url, '_blank', 'noopener'); }catch(_){ location.href = e.url; }
       }
+    
+      closeResults();
     });
 
     row.append(left, open);
@@ -1591,10 +713,27 @@ function renderResults(list, q){
 
 function wireGlobalSearch(){
   if (!domReadyForSearch()) return;
+  // Click submit still works
   searchBtn?.addEventListener('click', doSearch);
-  searchInput?.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') doSearch(); });
+  // Enter/Escape keys
+  searchInput?.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') doSearch();
+    if (e.key === 'Escape'){ searchInput.value=''; closeResults(); searchInput.blur(); }
+  });
+  // Reactive search while typing
+  searchInput?.addEventListener('input', debounce(()=>{ doSearch(); }, 120));
+  // Close on blur (slight delay to allow click inside results)
+  searchInput?.addEventListener('blur', ()=> setTimeout(()=> closeResults(), 150));
 }
 
+
+// Close search results when clicking outside the search/results
+document.addEventListener('click', (ev)=>{
+  const t = ev.target;
+  if (!resultsEl) return;
+  const inside = t === resultsEl || resultsEl.contains(t) || t === searchInput || (searchInput && searchInput.contains && searchInput.contains(t));
+  if (!inside) closeResults();
+});
 /* ===== Initial triggers ===== */
 document.addEventListener('DOMContentLoaded', () => {
   const initial = (location.hash || '#home').replace('#','') || 'home';
@@ -1629,6 +768,7 @@ document.addEventListener('click', (e)=>{
   if (!link) return;
   e.preventDefault();
   setActive(link.getAttribute('data-view'));
+  closeResults();
 });
 window.addEventListener('popstate', e=>{
   const v = (e.state && e.state.view) || (location.hash || '#home').replace('#','');
@@ -1698,6 +838,4 @@ function checkPasscode() {
   input?.addEventListener("keyup", (e)=>{ if (e.key === "Enter") checkPasscode(); });
 })();
 
-</script>
-</body>
-</html>
+</script></body></html>
