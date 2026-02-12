@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>KP360 · SOP Library</title>
+  <link rel="icon" type="image/x-icon" href="https://www.karparts360.com/images/simplecms/favicon.ico" />
+  <meta name="color-scheme" content="light dark" />
+
+  <style>
+    :root{
+      --brand:#1f2937;--brand-600:#111827;--ink:#0f172a;--ink-2:#4b5563;
+      --bg:#f6f7fb;--card:#ffffff;--border:#e5e7eb;--muted:#6b7280;
+      --header-h:64px;--footer-h:36px;
+    }
+    body.dark{
+      --brand:#5aa7ff;--brand-600:#2f7de8;--ink:#e6edf3;--ink-2:#9fb4c7;
+      --bg:#0f1520;--card:#131b29;--border:rgba(255,255,255,.08);--muted:#94a3b8;
+      background:radial-gradient(1200px 600px at 20% -10%,#173055 0%,transparent 60%),
+                 radial-gradient(1200px 600px at 100% -20%,#1b2440 0%,transparent 60%),
+                 var(--bg);
+      color:var(--ink);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      line-height:1.6; background:var(--bg); color:var(--ink);
+      padding-bottom:var(--footer-h);
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+      transition:background .25s ease,color .25s ease;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1400px,96%);margin-inline:auto}
+    .site-header{
+      position:sticky; top:0; z-index:60;
+      background:rgba(255,255,255,.85); backdrop-filter:saturate(1.15) blur(8px);
+      border-bottom:1px solid var(--border); height:var(--header-h);
+      transition:background .25s;
+    }
+    body.dark .site-header{
+      background:linear-gradient(180deg,rgba(19,31,53,.92),rgba(19,31,53,.75));
+      border-bottom:1px solid var(--border); backdrop-filter:saturate(120%) blur(6px);
+    }
+    .header-inner{display:flex;align-items:center;gap:.6rem;min-height:var(--header-h);padding:.2rem .4rem}
+    .brand{display:flex;align-items:center;gap:.5rem}
+    .brand img{height:22px;display:block}
+    .brand strong{font-size:.9rem}
+    .primary-nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+    .primary-nav a{
+      color:var(--ink-2);font-weight:700;font-size:.85rem;
+      padding:.25rem .45rem;border-radius:.4rem;
+      transition:background .2s,color .2s;
+    }
+    .primary-nav a:hover{color:var(--ink);background:rgba(0,0,0,.05)}
+    body.dark .primary-nav a:hover{background:rgba(255,255,255,.06)}
+    .icon-btn{
+      border:1px solid var(--border); background:var(--card); color:var(--ink);
+      width:32px;height:32px;display:grid;place-items:center;border-radius:.45rem;
+      cursor:pointer;padding:0;line-height:0;transition:filter .2s,background .2s,border-color .2s;
+    }
+    .icon-btn svg{width:18px;height:18px;stroke:currentColor;display:block}
+    body.dark .icon-btn{background:linear-gradient(180deg,var(--brand) 0%,var(--brand-600) 100%); color:#fff; border:0; border-radius:.65rem; box-shadow:0 4px 14px rgba(90,167,255,.28)}
+    body.dark .icon-btn:hover{filter:brightness(1.05)}
+    main{padding:1rem 0}
+    .content{
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:1rem; box-shadow:0 1px 6px rgba(0,0,0,.04);
+      transition:background .25s,border-color .25s;
+    }
+
+    /* SOP header + cards */
+    .sop-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .sop-head-actions{display:flex;align-items:center;gap:.5rem}
+    .sop-head-actions input{
+      min-width:min(520px,72vw);
+      padding:.55rem .7rem;border:1px solid var(--border);border-radius:.6rem;
+      background:var(--card);color:var(--ink);
+    }
+    @media (max-width:980px){ .sop-head-actions input{min-width:0;width:100%} }
+    .sop-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:1rem}
+    .sop-item{
+      width:100%;text-align:left;border:1px solid var(--border);background:var(--card);color:var(--ink);
+      border-radius:14px;padding:.85rem .9rem;cursor:pointer;display:flex;flex-direction:column;gap:.25rem;
+      transition:transform .15s ease,box-shadow .15s ease,background .2s,border-color .2s;
+      box-shadow:0 1px 10px rgba(0,0,0,.05)
+    }
+    .sop-item:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,.10)}
+    body.dark .sop-item:hover{box-shadow:0 14px 36px rgba(9,12,18,.7)}
+    .sop-item.active{border-color:rgba(59,130,246,.55);box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+    .sop-item .title{font-weight:800;font-size:1rem;line-height:1.2}
+    .sop-item .meta{font-size:.8rem;color:var(--ink-2);margin-top:.15rem}
+
+    /* Overlay viewer */
+    .iframe-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card)}
+    .sop-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;z-index:1100;
+    }
+    .sop-overlay.visible{display:flex}
+    .sop-modal{
+      width:min(1100px,94%);height:min(86vh,920px);
+      background:var(--card);color:var(--ink);
+      border:1px solid var(--border);border-radius:16px;
+      box-shadow:0 20px 50px rgba(0,0,0,.32);overflow:hidden;
+      display:flex;flex-direction:column;
+    }
+    .sop-modal-head{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      padding:12px 14px;background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff
+    }
+    .sop-modal-title{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+    .sop-modal-title .sop-meta{opacity:.92;font-size:.82rem}
+    .sop-modal-actions{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+    .sop-close{
+      border:1px solid rgba(255,255,255,.55);background:transparent;color:#fff;
+      padding:.38rem .7rem;border-radius:10px;cursor:pointer
+    }
+    .sop-close:hover{filter:brightness(1.05)}
+    .sop-modal-body{padding:12px;min-height:0;display:flex;flex-direction:column;gap:10px;flex:1}
+    .sop-modal-body .iframe-wrap{flex:1;min-height:0}
+    .sop-modal-body iframe{height:100%;width:100%;border:0;display:block;background:#fff}
+    .sop-find{display:flex;align-items:center;gap:.5rem}
+    .sop-find input{
+      min-width:min(360px,64vw);
+      padding:.5rem .65rem;border:1px solid var(--border);border-radius:.6rem;
+      background:var(--card);color:var(--ink)
+    }
+    @media (max-width:980px){
+      .sop-find input{min-width:0;width:100%}
+      .sop-find{width:100%}
+    }
+
+    footer{
+      position:fixed;bottom:0;left:0;right:0;text-align:center;
+      padding:.35rem 0;color:var(--muted);border-top:1px solid var(--border);
+      font-size:.72rem;background:#f9fafb;z-index:70;transition:background .25s,color .25s,border-color .25s;
+    }
+    body.dark footer{background:rgba(13,18,28,.85)}
+    /* Hide "Word export (HTML)" under each SOP card title */
+.sop-item .meta { 
+  display: none !important; 
+}
+
+/* Hide the file path shown in the overlay header */
+#sopOverlayMeta { 
+  display: none !important; 
+}
+
+  </style>
+</head>
+
+<body>
+  <header class="site-header" id="header">
+    <div class="container header-inner">
+      <div class="brand" title="SOP Library">
+        <img alt="KarParts360" src="https://raw.githubusercontent.com/purchase-order-team/Processors/main/path/to/photos/Default%20KarParts360%20LOGO%20Version%203.png" />
+        <strong>PO TEAM · SOPs</strong>
+      </div>
+
+      <nav class="primary-nav">
+       <!-- Replace your nav block with this (Back to Hub removed) -->
+<nav class="primary-nav">
+  <button aria-label="Toggle dark/light" class="icon-btn" id="themeToggle"></button>
+</nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="content">
+      <div class="sop-head">
+        <div>
+          <h2 style="margin:0">SOP Library</h2>
+          <div style="margin-top:.25rem;color:var(--ink-2);font-size:.9rem">
+            Browse SOPs, open in viewer, and use “Find in this SOP”.
+          </div>
+        </div>
+
+        <div class="sop-head-actions">
+          <input id="sopLibrarySearch" type="search" placeholder="Search SOP library…" autocomplete="off" />
+          <button class="icon-btn" id="sopLibraryClear" title="Clear search" aria-label="Clear SOP search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="sop-cards" id="sopCards" aria-label="SOP cards"></div>
+    </section>
+
+    <!-- Overlay viewer -->
+    <div class="sop-overlay" id="sopOverlay" aria-hidden="true">
+      <div class="sop-modal" role="dialog" aria-modal="true" aria-label="SOP Viewer">
+        <div class="sop-modal-head">
+          <div class="sop-modal-title">
+            <strong id="sopOverlayTitle">SOP</strong>
+            <span class="sop-meta" id="sopOverlayMeta"></span>
+          </div>
+
+          <div class="sop-modal-actions">
+            <div class="sop-find">
+              <input id="sopFindInput" type="search" placeholder="Find in this SOP…" autocomplete="off" />
+              <button class="icon-btn" id="sopFindClear" title="Clear find" aria-label="Clear find">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <button class="sop-close" id="sopOverlayClose" type="button">Close</button>
+          </div>
+        </div>
+
+        <div class="sop-modal-body">
+          <div class="iframe-wrap">
+            <iframe id="sopViewer" loading="lazy" title="SOP Viewer" src="about:blank"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="footer">© KarParts360 PO Team 2025</footer>
+
+  <script>
+    /* ========= Theme ========= */
+    const themeToggle = document.getElementById('themeToggle');
+    const sunSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>`;
+    const moonSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    function setThemeIcon(mode){ if (themeToggle) themeToggle.innerHTML = (mode === 'dark') ? sunSVG : moonSVG; }
+    function applyTheme(mode){
+      if(mode==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark');
+      localStorage.setItem('theme',mode); setThemeIcon(mode);
+    }
+    themeToggle?.addEventListener('click', ()=> applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
+    applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
+    /* ========= SOP Library ========= */
+    // NOTE: keep these paths the same as your repo layout:
+    // - This SOP page is typically at /SOP.html
+    // - SOP files live under /sops/*.htm
+    const SOP_LIBRARY = [
+      { id:"accounting-gc-concern", title:"Accounting GC Concerns", file:"sops/Accounting GC concern 1.htm", note:"Word export (HTML)", tags:"accounting gc concern 1" },
+      { id:"droopship-errors-and-wrong-item-fulfillment-sweep", title:"Dropship Errors and Wrong Item Fulfillment Sweep", file:"sops/Dropship Errors and Wrong Item Fulfillment Sweep.htm", note:"Word export (HTML)", tags:"dropship errors wrong item fulfillment sweep" },
+      { id:"eod-closing-overall-sweep", title:"EOD Closing Overall Sweep", file:"sops/EOD Closing Overall Sweep.htm", note:"Word export (HTML)", tags:"eod closing overall sweep" },
+      { id:"eod-tracker-sweep", title:"EOD tracker Sweep", file:"sops/EOD tracker Sweep.htm", note:"Word export (HTML)", tags:"eod tracker sweep" },
+      { id:"false-status", title:"False Status", file:"sops/False Status 1.htm", note:"Word export (HTML)", tags:"false status" },
+      { id:"item-receiving", title:"Item Receiving", file:"sops/Item Receiving 1.htm", note:"Word export (HTML)", tags:"item receiving" },
+      { id:"kema-tracking-number-and-fulfilled-skus", title:"KEMA TRACKING NUMBER AND FULFILLED SKUS", file:"sops/KEMA TRACKING NUMBER AND FULFILLED SKUS 1.htm", note:"Word export (HTML)", tags:"kema tracking fulfilled skus" },
+      { id:"meyer-to-big3-crossfulfillment-sop", title:"Meyer to Big3 Crossfulfillment", file:"sops/Meyer to Big3 Crossfulfillment SOP 1.htm", note:"Word export (HTML)", tags:"meyer big3 crossfulfillment sop" },
+      { id:"oos-and-jwl-sweeping-sop", title:"OOS and JWL Sweeping SOP", file:"sops/OOS and JWL Sweeping SOP 1.htm", note:"Word export (HTML)", tags:"oos jwl sweeping sop" },
+      { id:"kema-sales-order-and-item-fulfillement-upload", title:"KEMA SALES ORDER AND ITEM FULFILLMENT UPLOAD", file:"sops/SOP - KEMA SALES ORDER AND ITEM FULFILLMENT UPLOAD.htm", note:"Word export (HTML)", tags:"kema sales order item fulfillment upload" },
+      { id:"shipstation-stale-order-sweep", title:"Shipstation Stale Order Sweep", file:"sops/Shipstation Stale Order Sweep.htm", note:"Word export (HTML)", tags:"shipstation stale order sweep" },
+      { id:"usauto-stale-sweep", title:"Usauto Stale Sweep", file:"sops/Usauto Stale Sweep 1.htm", note:"Word export (HTML)", tags:"usauto stale sweep" },
+    ];
+
+    const SOP_TEXT_CACHE = new Map(); // id -> { text, fetchedAt }
+    let SOP_INDEXING_PROMISE = null;
+
+    function debounce(fn, delay=180){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,args), delay); }; }
+    function sopBaseHaystack(sop){ return [sop.title, sop.note||'', sop.tags||'', sop.file||''].join(' ').toLowerCase(); }
+
+    function stripHtmlToText(html){
+      try{
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const t = (doc.body ? doc.body.textContent : doc.textContent) || '';
+        return t.replace(/\s+/g,' ').trim();
+      }catch(_e){
+        return (html||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+      }
+    }
+
+    async function fetchSopText(sop){
+      if (SOP_TEXT_CACHE.has(sop.id)) return SOP_TEXT_CACHE.get(sop.id).text;
+      const res = await fetch(sop.file, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = await res.text();
+      const text = stripHtmlToText(html);
+      SOP_TEXT_CACHE.set(sop.id, { text, fetchedAt: Date.now() });
+      return text;
+    }
+
+    // Optional: index full SOP body once so library search can match content
+    function indexAllSopsOnce(){
+      if (SOP_INDEXING_PROMISE) return SOP_INDEXING_PROMISE;
+      SOP_INDEXING_PROMISE = (async ()=>{
+        for (const sop of SOP_LIBRARY){
+          try{
+            const text = await fetchSopText(sop);
+            sop._haystack = (sopBaseHaystack(sop) + ' ' + text).toLowerCase();
+          }catch(err){
+            console.warn('[SOP] Indexing failed for', sop.file, err);
+            sop._haystack = sopBaseHaystack(sop);
+          }
+        }
+      })();
+      return SOP_INDEXING_PROMISE;
+    }
+
+    function getSopById(id){ return SOP_LIBRARY.find(s => s.id === id) || null; }
+
+    function sopEls(){
+      return {
+        cards: document.getElementById('sopCards'),
+        overlay: document.getElementById('sopOverlay'),
+        closeBtn: document.getElementById('sopOverlayClose'),
+        title: document.getElementById('sopOverlayTitle'),
+        meta: document.getElementById('sopOverlayMeta'),
+        frame: document.getElementById('sopViewer'),
+        findInput: document.getElementById('sopFindInput'),
+        findClear: document.getElementById('sopFindClear'),
+      };
+    }
+
+    function setActiveSopCard(id){
+      document.querySelectorAll('.sop-item').forEach(b=>{
+        b.classList.toggle('active', b.dataset.sopId === id);
+      });
+    }
+
+    function setSopOverlayHeader(sop){
+      const { title, meta } = sopEls();
+      if (title) title.textContent = sop ? sop.title : 'SOP';
+      if (meta)  meta.textContent  = sop ? `(${sop.file})` : '';
+    }
+
+    function showSopOverlay(){
+      const { overlay } = sopEls();
+      if (!overlay) return;
+      overlay.classList.add('visible');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function clearIframeHighlights(frame){
+      try{
+        const doc = frame?.contentDocument;
+        if (!doc) return;
+        const marks = Array.from(doc.querySelectorAll('mark.kp360-sop-mark'));
+        marks.forEach(m=>{
+          const parent = m.parentNode;
+          parent.replaceChild(doc.createTextNode(m.textContent || ''), m);
+          parent.normalize();
+        });
+      }catch(_e){}
+    }
+
+    function ensureSopIframeStyles(frame){
+      try{
+        const doc = frame.contentDocument;
+        if (!doc) return;
+        if (doc.getElementById('kp360-sop-mark-style')) return;
+        const st = doc.createElement('style');
+        st.id = 'kp360-sop-mark-style';
+        st.textContent = `
+          html,body{ height:auto !important; background:#fff !important; }
+          body{ margin:0 !important; padding:16px !important; max-width: 980px; box-sizing:border-box; }
+          img,table{ max-width:100% !important; height:auto !important; }
+          pre{ white-space:pre-wrap; word-break:break-word; }
+          mark.kp360-sop-mark{ background:#ffe58f; padding:0 .1em; border-radius:.2em; }
+          mark.kp360-sop-mark.active{ outline:2px solid #f59e0b; }
+        `;
+        (doc.head || doc.documentElement).appendChild(st);
+      }catch(_e){}
+    }
+
+    function highlightInIframe(frame, query){
+      if (!frame) return;
+      if (!query) { clearIframeHighlights(frame); return; }
+      try{
+        const doc = frame.contentDocument;
+        if (!doc || !doc.body) return;
+
+        clearIframeHighlights(frame);
+        ensureSopIframeStyles(frame);
+
+        const q = query.toLowerCase();
+        const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, {
+          acceptNode: (node)=>{
+            if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
+            const p = node.parentElement;
+            if (!p) return NodeFilter.FILTER_REJECT;
+            if (['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+            if (!node.nodeValue.toLowerCase().includes(q)) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+
+        const hits = [];
+        while (walker.nextNode()) hits.push(walker.currentNode);
+
+        hits.slice(0, 120).forEach(node=>{
+          const text = node.nodeValue;
+          const lower = text.toLowerCase();
+          const idx = lower.indexOf(q);
+          if (idx < 0) return;
+
+          const before = text.slice(0, idx);
+          const match  = text.slice(idx, idx + query.length);
+          const after  = text.slice(idx + query.length);
+
+          const mark = doc.createElement('mark');
+          mark.className = 'kp360-sop-mark';
+          mark.textContent = match;
+
+          const frag = doc.createDocumentFragment();
+          if (before) frag.appendChild(doc.createTextNode(before));
+          frag.appendChild(mark);
+          if (after) frag.appendChild(doc.createTextNode(after));
+
+          node.parentNode.replaceChild(frag, node);
+        });
+
+        const first = doc.querySelector('mark.kp360-sop-mark');
+        if (first && first.scrollIntoView){
+          first.classList.add('active');
+          first.scrollIntoView({ behavior:'smooth', block:'center' });
+        }
+      }catch(err){
+        console.warn('[SOP] Find-in-document not available:', err);
+      }
+    }
+
+    const debouncedFindInIframe = debounce((q)=>{
+      const { frame } = sopEls();
+      if (!frame) return;
+      highlightInIframe(frame, q);
+    }, 160);
+
+    function hideSopOverlay(){
+      const { overlay, frame, findInput, findClear } = sopEls();
+      if (!overlay) return;
+
+      overlay.classList.remove('visible');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+
+      if (findInput) findInput.value = '';
+      if (findClear) findClear.disabled = true;
+      try{ clearIframeHighlights(frame); }catch(_e){}
+      if (frame) frame.src = 'about:blank';
+    }
+
+    function renderSopCards(list){
+      const { cards } = sopEls();
+      if (!cards) return;
+      cards.innerHTML = '';
+
+      (list||[]).forEach(sop=>{
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'sop-item';
+        btn.dataset.sopId = sop.id;
+        btn.innerHTML = `
+          <div class="title">${sop.title}</div>
+          <div class="meta">${sop.note || 'SOP'}</div>
+        `;
+        btn.addEventListener('click', ()=> openSop(sop.id));
+        cards.appendChild(btn);
+      });
+
+      if (!cards.children.length){
+        cards.innerHTML = `<div style="padding:.5rem;color:var(--ink-2);font-size:.9rem">No SOPs matched your search.</div>`;
+      }
+    }
+
+    function openSop(id){
+      const sop = getSopById(id);
+      const { frame, findInput, findClear } = sopEls();
+      if (!sop || !frame) return;
+
+      setSopOverlayHeader(sop);
+      setActiveSopCard(id);
+
+      if (findInput) findInput.value = '';
+      if (findClear) findClear.disabled = true;
+
+      frame.src = new URL(sop.file, window.location.href).href;
+      frame.onload = ()=> { try{ ensureSopIframeStyles(frame); }catch(_e){} };
+
+      showSopOverlay();
+      indexAllSopsOnce(); // starts indexing for better search
+    }
+
+    function initSopPage(){
+      const { overlay, closeBtn, findInput, findClear } = sopEls();
+      const qInput = document.getElementById('sopLibrarySearch');
+      const qClear = document.getElementById('sopLibraryClear');
+
+      // Initial render
+      renderSopCards(SOP_LIBRARY);
+
+      // Kick off indexing (non-blocking)
+      setTimeout(()=> indexAllSopsOnce(), 50);
+
+      // Close wiring
+      closeBtn?.addEventListener('click', hideSopOverlay);
+      overlay?.addEventListener('click', (e)=>{ if (e.target === overlay) hideSopOverlay(); });
+      document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && overlay?.classList.contains('visible')) hideSopOverlay(); }, { passive:true });
+
+      // Library search
+      function runLibrarySearch(){
+        const q = (qInput?.value || '').trim().toLowerCase();
+        if (!q){
+          renderSopCards(SOP_LIBRARY);
+          if (qClear) qClear.disabled = true;
+          return;
+        }
+        if (qClear) qClear.disabled = false;
+
+        const tokens = q.split(/\s+/).filter(Boolean);
+
+        const scored = SOP_LIBRARY.map(s=>{
+          const hay = (s._haystack || sopBaseHaystack(s)).toLowerCase();
+          let score = 0;
+          tokens.forEach(t=>{
+            if (!t) return;
+            if (hay.includes(t)) score += 1;
+            if ((s.title||'').toLowerCase().includes(t)) score += 2;
+            if ((s.tags||'').toLowerCase().includes(t)) score += 1;
+          });
+          const all = tokens.every(t => hay.includes(t));
+          if (all) score += 3;
+          return { sop:s, score };
+        })
+        .filter(x => x.score > 0)
+        .sort((a,b)=> b.score - a.score || a.sop.title.localeCompare(b.sop.title));
+
+        renderSopCards(scored.map(x=>x.sop));
+      }
+
+      qInput?.addEventListener('input', debounce(runLibrarySearch, 140));
+      qClear?.addEventListener('click', ()=>{
+        if (qInput) qInput.value = '';
+        runLibrarySearch();
+        qInput?.focus();
+      });
+      if (qClear) qClear.disabled = true;
+
+      // Find in current SOP (overlay)
+      function runFind(){
+        const q = (findInput?.value || '').trim();
+        if (findClear) findClear.disabled = !q;
+        debouncedFindInIframe(q);
+      }
+      findInput?.addEventListener('input', runFind);
+      findClear?.addEventListener('click', ()=>{
+        if (findInput) findInput.value = '';
+        runFind();
+        findInput?.focus();
+      });
+      if (findClear) findClear.disabled = true;
+
+      // Optional: open via hash "#sop=<id>"
+      try{
+        const h = (location.hash || '').replace('#','');
+        const params = new URLSearchParams(h.includes('?') ? h.split('?')[1] : h);
+        const sopId = params.get('sop');
+        if (sopId) openSop(sopId);
+      }catch(_e){}
+    }
+
+    document.addEventListener('DOMContentLoaded', initSopPage);
+  </script>
+</body>
+</html>
